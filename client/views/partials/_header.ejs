@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<HTML>
+<head>
+    <title>QRL</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="shortcut icon" href="#" />
+    <link rel = "stylesheet" type = "text/css" href = "/assets/style.css"/>
+</head>
+<body>
+
+<div class = "container">
+    <div class = "alert">
+
+        <span class = "error">
+            <% if(typeof(error) != "undefined"){ %>
+                <%= error %>
+            <% }%>
+        </span>
+
+        <span class = "message">
+            <% if(typeof(message) != "undefined"){ %>
+                <%= message %>
+            <% }%>
+        </span>
+
+    </div>
+    <div class = "links">
+
+        <div class = "navigation">
+            <a href= "/">Home</a>
+            <a href= "/signup">Sign Up</a>
+            <a href= "/allplayers">All Players</a>
+        </div>
+
+        <div class = "account">
+            <% if (typeof(session.user) == "undefined" || session.user == null){ %>
+                    <a href= "/login">Log In</a>
+            <% } else if (typeof(session.user) != "undefined" && session.user != null){ %>
+                <p class = "welcome">Hello, <%= session.user.name %></p>
+                <a href = "/game">Game</a>
+                <a href = "/logout">Log Out</a>
+            <% } %>
+        </div>
+    </div>
+
+    <hr>
+
+
+   

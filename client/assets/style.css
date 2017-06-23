@@ -1,0 +1,21 @@
+/* alert messages, header */
+
+.error {
+    color: red;
+}
+
+.message {
+    color: blue;
+}
+
+.links a{
+    display: inline;
+}
+
+.links div {
+    display: inline;
+}
+
+.account{
+    float: right;
+}

@@ -1,0 +1,30 @@
+<% include partials/_header.ejs %>
+
+
+<h2>Create new player</h2>
+
+<form action = "/signup" method = "post">
+    <p>Name:</p>
+    <input type="text" name="name" id="player-name" autofocus></input>
+    <br>
+    <br>
+    <p>Email:</p>
+    <input type="text" name="name" id="player-name" autofocus></input>
+    <br>
+    <br>
+    <p>Password:</p> 
+    <input type = "password" name = "capital" id="password"></input>
+    <br>
+    <br>
+    <p>Password confirmation:</p> 
+    <input type = "password" name = "capital" id="password-confirm"></input>
+    <br>
+    <br>
+    <input type = "submit" id = "new-player-submit"></input>
+</form>
+
+
+
+<% include partials/_footer.ejs %>
+
+<script src = "/js/account.js"></script>
