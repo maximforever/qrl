@@ -19,8 +19,8 @@ app.use(express.static('client'));         // sets the correct views for the CSS
 
 
 
-const data = require("./app/database");
-const dbops = require("./app/dbops");
+
+const data = require("./app/dbops");
 
 
 MongoClient.connect("mongodb://localhost:27017/qrl", function(err, database){
@@ -81,13 +81,13 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, database){
             var newPlayer = {
                 gameID: null,
                 name: req.body.name,
-                email: req.body.email
-                /*, stats: {
+                email: req.body.email, 
+                stats: {
                     econ_level: 1,
                     military_level: 1
                 },
                 city: {
-                    name: "TBD"
+                    name: "TBD",
                     buildings: {
                         barracks: 0,
                         granary: 0,
@@ -134,7 +134,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, database){
                         red: 0,
                         blue: 0
                     }
-                }*/
+                }
             }
 
             /*var newScout = {

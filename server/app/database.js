@@ -1,5 +1,3 @@
-var db = "qrl"
-
 function create(db, col, obj, res, callback){
     console.log("DB: creating");
     db.collection(col).save(obj, function(err, result){

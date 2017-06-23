@@ -1,7 +1,14 @@
-const db = require("./app/database");
+const data = require("./dbops");
+
+function newPlayer(db, player, res, callback){
+	data.create(db, "player", player, res, function(){
+		
 
 
-function newPlayer(player){
+
+
+	});
+
 
 }
 
