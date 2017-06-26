@@ -20,17 +20,15 @@ app.use(express.static('client'));         // sets the correct views for the CSS
 
 
 
-const data = require("./app/dbops");
+const dbops = require("./app/dbops");
 
 
-MongoClient.connect("mongodb://localhost:27017/qrl", function(err, database){
+MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     if (err){
         console.log("MAYDAY! MAYDAY! Crashing.");
         return console.log(err);
     }
 
-    db = database;                                      // mongo passes us a database, we store its contents in this variable... I think.
-    
     app.use(bodyParser.urlencoded({
         extended: true
     }));
@@ -38,7 +36,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, database){
     app.use(bodyParser.json());                         // for parsing application/json
 
 
-    app.use(session({
+    app.use(session({                                   // I THINK we only need to do this once, because it's causing us to send 2 GET requests to '/'
         secret: 'awfulPassword',
         saveUninitialized: false,
         resave: false,
@@ -48,12 +46,12 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, database){
 
     app.use(function(req, res, next){                                           // logs request URL
         var timeNow = new Date();
-        console.log("-----> " + req.method.toUpperCase() + " " + req.url + " on " + timeNow);    
+        console.log("-----> " + req.method.toUpperCase() + " " + req.url + " on " + timeNow);  
         next();
     });
 
-    app.use(function(req, res, next) {                                          // makes session available to all views
-        app.locals.session = req.session;
+    app.use(function(req, res, next) {                                          
+        app.locals.session = req.session;                                       // makes session available to all views
         app.locals.error = req.session.error;                                   // making copies like this is clunky, but it works
         app.locals.message = req.session.message;
         req.session.error = null;
@@ -75,93 +73,65 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, database){
     })
 
     /* CREATE NEW PLAYER */
-    app.post("/signup", function(req, res){
-        console.log(req.body);
-        if((req.body.name).replace(/\s/g, '').length > 0){          // let's make sure the input name isn't empty   
-            var newPlayer = {
-                gameID: null,
-                name: req.body.name,
-                email: req.body.email, 
-                stats: {
-                    econ_level: 1,
-                    military_level: 1
-                },
-                city: {
-                    name: "TBD",
-                    buildings: {
-                        barracks: 0,
-                        granary: 0,
-                        citadel: {
-                            walls: "wood",
-                            hp: 100,
-                            max_hp: 100
-                        },
-                        walls: {
-                            east: {
-                                material: "wood",
-                                hp: 100,
-                                max_hp: 100
-                            },
-                            west: {
-                                material: "wood",
-                                hp: 100,
-                                max_hp: 100
-                            },
-                            north: {
-                                material: "wood",
-                                hp: 100,
-                                max_hp: 100
-                            },
-                            south: {
-                                material: "wood",
-                                hp: 100,
-                                max_hp: 100
-                            }
-                        }
-                    }
-                },
-                resources: {
-                    coin: {
-                        count: 1000, 
-                        lastUpdated: Date.now()
-                    },
-                    food: {
-                        count: 0, 
-                        lastUpdated: Date.now()
-                    },
-                    gems: {
-                        green: 0,
-                        red: 0,
-                        blue: 0
-                    }
-                }
+    app.post("/signup", function(req, res){  
+        dbops.createNewPlayer(db, req, res, function tryToSignup(response){        
+            if(response.status == "fail"){
+                res.render("signup", {error: response.message});
+            } else if(response.status == "success"){
+                res.redirect("/login");
+            } else {
+                res.render("signup", {error: "Something strange happened"});
             }
-
-            /*var newScout = {
-                type: "scout",
-                lastUpdated: Date.now(),
-                owner: newPlayer.name,
-                job: "none",
-                id: Date.now()
-            }*/
-
-            dbops.newPlayer()
-
-            
-
-        } else {
-            res.send("cannot save player with no name or capital");
-        }
-        
+        });                    
     });
 
 
+    app.get("/login", function(req, res){
+        res.render("login");
+    });
+
+    app.post("/login", function(req, res){
+        dbops.login(db, req, res, function tryToLogin(response){
+            if(response.status == "fail"){
+                res.render("login", {error: response.message});
+            } else if(response.status == "success"){
+                req.session.message = "Logged in!"
+                res.redirect("game")
+            } else {
+                res.render("login", {error: "Something strange happened"});
+            }   
+        });
+    });
+
+    app.get("/logout", function(req, res){
+        req.session.user = null;
+        req.session.expires = new Date(Date.now);       /* not sure if this is needed */
+        res.render("login", {error: "Logged out"});
+    })
 
 
+    /* GAME */
 
+    app.get("/game", function(req, res){
 
+        if(!req.session.user){
+            res.redirect("/login");
+        } else {
+            res.render("game");
+        }
 
+    });
 
+    app.get("/game-info", function(req, res){
+        if(req.session.user){
+            gameData = dbops.getGameData(db, req, res, function sendGameData(gameData){
+                res.send(gameData);
+            })
+        } else {
+            req.session.error = "You're not logged in";
+            res.redirect("/");
+        }
+    });
 
 
 /* END ROUTES */

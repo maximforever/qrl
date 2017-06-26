@@ -5,12 +5,13 @@ function create(db, col, obj, res, callback){
             console.log("MAYDAY! MAYDAY! Crashing.");
             return console.log(err);
         }
-        console.log("Saved the object to the database!");
-        callback();
+        console.log("Successfully saved this object:");
+        console.log(obj);
+        callback(result);
     })
 }
 
-function find(db, col, obj, res, callback){                                // Equivalent to read
+function read(db, col, obj, res, callback){                                
     console.log("DB: reading");
     db.collection(col).find(obj).toArray(function(err, result){
         if (err){
@@ -42,7 +43,7 @@ function update(db, col, item, query, callback){
 
 
 function remove(db, col, query, res, callback){
-    
+    console.log("DB: deleting");
     db.collection(col).remove(query, function removeThis(err, result) {
         if (err){
             console.log("MAYDAY! MAYDAY! Crashing.");
@@ -61,6 +62,6 @@ function remove(db, col, query, res, callback){
 
 
 module.exports.create = create;
-module.exports.find = find;
+module.exports.read = read;
 module.exports.update = update;
 module.exports.remove = remove;
