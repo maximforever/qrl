@@ -1,74 +1,102 @@
 const database = require("./database");
 
+
+
+
+
+/* Unit cost*/
+/* THIS IS TERRIBLE AND NEEDS TO BE MOVED TO A DB */
+
+var unitCost = {
+	"scout": 50,
+	"worker": 50,
+	"footman": 100,
+	"archer": 200
+}
+
 function createNewPlayer(db, req, res, callback){
 	if((req.body.name).replace(/\s/g, '').length > 0){    	// let's make sure the input name isn't empty  
 		var newPlayer = {
             gameID: null,
             name: req.body.name.toLowerCase(),
         //    email: req.body.email.toLowerCase(), 
-            stats: {
-                econ_level: 1,
-                military_level: 1
-            },
-            city: {
-                name: "TBD",
-                buildings: {
-                    barracks: 0,
-                    granary: 0,
-                    citadel: {
-                        walls: "wood",
-                        hp: 100,
-                        max_hp: 100
-                    },
-                    walls: {
-                        east: {
-                            material: "wood",
-                            hp: 100,
-                            max_hp: 100
-                        },
-                        west: {
-                            material: "wood",
-                            hp: 100,
-                            max_hp: 100
-                        },
-                        north: {
-                            material: "wood",
-                            hp: 100,
-                            max_hp: 100
-                        },
-                        south: {
-                            material: "wood",
-                            hp: 100,
-                            max_hp: 100
-                        }
-                    }
-                }
-            },
-            resources: {
-                coin: {
-                    count: 1000, 
-                    lastUpdated: Date.now()
-                },
-                food: {
-                    count: 0, 
-                    lastUpdated: Date.now()
-                },
-                gems: {
-                    green: {
-                        count: 0, 
-                        lastUpdated: Date.now()
-                    },
-                    red: {
-                        count: 0, 
-                        lastUpdated: Date.now()
-                    },
-                    blue: {
-                        count: 0, 
-                        lastUpdated: Date.now()
-                    }
-                }
+            assets: {
+            	name: req.body.name.toLowerCase(),
+	            stats: {
+	                econ_level: 1,
+	                military_level: 1
+            	},
+	            city: {
+	                name: "TBD",
+	                buildings: {
+	                    barracks: 0,
+	                    granary: 0,
+	                    citadel: {
+	                        walls: "wood",
+	                        hp: 100,
+	                        max_hp: 100
+	                    },
+	                    walls: {
+	                        east: {
+	                            material: "wood",
+	                            hp: 100,
+	                            max_hp: 100
+	                        },
+	                        west: {
+	                            material: "wood",
+	                            hp: 100,
+	                            max_hp: 100
+	                        },
+	                        north: {
+	                            material: "wood",
+	                            hp: 100,
+	                            max_hp: 100
+	                        },
+	                        south: {
+	                            material: "wood",
+	                            hp: 100,
+	                            max_hp: 100
+	                        }
+	                    }
+	                }
+	            },
+	            resources: {
+	                coin: {
+	                    count: 1000, 
+	                    lastUpdated: Date.now()
+	                },
+	                food: {
+	                    count: 0, 
+	                    lastUpdated: Date.now()
+	                },
+	                gems: {
+	                    green: {
+	                        count: 0, 
+	                        lastUpdated: Date.now()
+	                    },
+	                    red: {
+	                        count: 0, 
+	                        lastUpdated: Date.now()
+	                    },
+	                    blue: {
+	                        count: 0, 
+	                        lastUpdated: Date.now()
+	                    }
+	                }
+	            }
             }
         }
+
+        var scout = {
+			type: "scout",
+			lastUpdated: Date.now(),
+			owner: thisPlayer[0].name,
+			job: "none",
+			jobMessage: "none",
+			id: Date.now()
+		}
+
+        createUnit(scout);
 
 		// check if player exists in database:
 
@@ -133,16 +161,105 @@ function getGameData(db, req, res, callback){
 		name: req.session.user.name
 	}
 
+	var unitQuery = {
+		owner: req.session.user.name
+	}
+
 	database.read(db, "player", playerQuery, res, function(newestPlayerData){
-		callback(newestPlayerData[0]);
+		database.read(db, "unit", unitQuery, res, function(newestUnitData){
+
+			var updatedData = {
+				playerData: newestPlayerData[0].assets,
+				unitData: newestUnitData
+			}
+			callback(updatedData);
+		})
 	})
-
-
-
 }
+
+
+function buyUnit(db, req, res, callback){
+
+	if(req.session.user){				// let's make sure the player is logged in
+		var playerQuery = {
+			name: req.session.user.name
+		}
+
+
+		database.read(db, "player", playerQuery, res, function(thisPlayer){
+			console.log("Player has " + thisPlayer[0].assets.resources.coin.count + " coin");
+
+			if(thisPlayer[0].assets.resources.coin.count >= unitCost[req.body.unit]){
+
+				console.log("got enough coin to buy a " + req.body.unit)
+
+				var newUnit = {
+					type: req.body.unit,
+					lastUpdated: Date.now(),
+					owner: thisPlayer[0].name,
+					job: "none",
+					jobMessage: "none",
+					id: Date.now()
+				}
+
+				var count = "resources.coin.count";
+
+				var updatedStats = {
+					$inc: {
+						"assets.resources.coin.count": - (unitCost[req.body.unit])		// decrease how much coin the player has
+					}
+				}													
+
+				database.update(db, "player", playerQuery, updatedStats, res, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
+					console.log("Successfully updated player coin count!");
+
+					database.create(db, "unit", newUnit, res, function createUnitForPlayer(newUnit){		// this creates the new unit
+						
+						var unitQuery = {
+							owner: thisPlayer[0].name,
+							type: req.body.unit
+						}
+
+						database.read(db, "unit", unitQuery, res, function returnNumOfUnits(unitNum){		// this returns how much of that unit the player has
+							var updatedPlayerData = {
+    							unitCount: unitNum.length,
+    							coinCount: updatedPlayer.assets.resources.coin.count
+    						}
+    						callback({status: "success", data: updatedPlayerData});
+						});
+					});
+
+				})
+			} else {
+				callback({status: "fail", message: "Not enough coin"});
+			}
+		})
+	} else {
+		callback({status: "fail", message: "You must be logged in"});
+	}
+}
+
+
+
+function createUnit(newUnit){
+	database.create(db, "unit", newUnit, res, function createUnitForPlayer(newUnit){		// this creates the new unit
+		var unitQuery = {
+			owner: thisPlayer[0].name,
+			type: unit
+		}
+
+		database.read(db, "unit", unitQuery, res, function returnNumOfUnits(unitNum){		// this returns how much of that unit the player has
+			return unitNum;
+		});
+	});
+}
+
+
+
 
 
 
 module.exports.createNewPlayer = createNewPlayer;
 module.exports.login = login;
 module.exports.getGameData = getGameData;
+module.exports.buyUnit = buyUnit;

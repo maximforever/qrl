@@ -133,6 +133,19 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         }
     });
 
+    app.post("/buy-unit", function(req, res){
+        dbops.buyUnit(db, req, res, function(response){
+            if(response.status == "success"){
+                res.send(response)
+            } else {
+                res.send({message: response.message})
+            }
+
+
+
+        })
+    });
+
 
 /* END ROUTES */
 
