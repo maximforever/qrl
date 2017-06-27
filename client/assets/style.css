@@ -26,3 +26,21 @@
 	padding-top: 2%;
 	text-align: center;
 }
+
+.control-panel {
+	background: gray;
+	display: block;
+	margin-bottom: 2em;
+	text-align: center;
+}
+
+.tile {
+	display: inline-block;
+	min-width: 33%;
+	border: 1px solid black;
+	text-align: center;
+}
+
+.tile:hover {
+	background: yellow;
+}
