@@ -14,7 +14,7 @@ var unitCost = {
 	"archer": 200
 }
 
-function createNewPlayer(db, req, res, callback){
+function createNewPlayer(db, req, callback){
 	if((req.body.name).replace(/\s/g, '').length > 0){    	// let's make sure the input name isn't empty  
 		var newPlayer = {
             gameID: null,
@@ -90,13 +90,11 @@ function createNewPlayer(db, req, res, callback){
         var scout = {
 			type: "scout",
 			lastUpdated: Date.now(),
-			owner: thisPlayer[0].name,
+			owner: newPlayer.name,
 			job: "none",
 			jobMessage: "none",
 			id: Date.now()
 		}
-
-        createUnit(scout);
 
 		// check if player exists in database:
 
@@ -104,13 +102,15 @@ function createNewPlayer(db, req, res, callback){
 			name: newPlayer.name
 		}
 
-		database.read(db, "player", playerQuery, res, function(existingPlayer){
+		database.read(db, "player", playerQuery, function(existingPlayer){
 			if(existingPlayer.length > 0){												// if this player already exists end here
 				console.log("player already exists")
 				callback({status: "fail", message: "Player already exists"})
 			} else {	
-				database.create(db, "player", newPlayer, res, function(newlyCreatedPlayer){
-					callback({status: "success", player: newlyCreatedPlayer[0]})
+				database.create(db, "player", newPlayer, function(newlyCreatedPlayer){
+					createUnit(db, scout, function confirmNewPlayer(newUnit, unitNum){
+						callback({status: "success", player: newlyCreatedPlayer[0]})
+					});
 				});
 			}
 		})
@@ -119,14 +119,14 @@ function createNewPlayer(db, req, res, callback){
 	}
 }
 
-function login(db, req, res, callback){
+function login(db, req, callback){
 	if((req.body.name).replace(/\s/g, '').length > 0){    	// let's make sure the input name isn't empty  
 
 		var playerQuery = {
 			name: req.body.name
 		}	
 
-		database.read(db, "player", playerQuery, res, function(existingPlayer){
+		database.read(db, "player", playerQuery, function(existingPlayer){
 			if(existingPlayer.length == 1){												// if this player exists
 				console.log("Logged in successfully.")
 				console.log("SETTING COOKIE!");
@@ -148,7 +148,7 @@ function login(db, req, res, callback){
 	}
 }
 
-function getGameData(db, req, res, callback){
+function getGameData(db, req, callback){
 
 	/*
 		1. get the players' data, filter our player
@@ -165,8 +165,8 @@ function getGameData(db, req, res, callback){
 		owner: req.session.user.name
 	}
 
-	database.read(db, "player", playerQuery, res, function(newestPlayerData){
-		database.read(db, "unit", unitQuery, res, function(newestUnitData){
+	database.read(db, "player", playerQuery, function(newestPlayerData){
+		database.read(db, "unit", unitQuery, function(newestUnitData){
 
 			var updatedData = {
 				playerData: newestPlayerData[0].assets,
@@ -178,7 +178,7 @@ function getGameData(db, req, res, callback){
 }
 
 
-function buyUnit(db, req, res, callback){
+function buyUnit(db, req, callback){
 
 	if(req.session.user){				// let's make sure the player is logged in
 		var playerQuery = {
@@ -186,7 +186,7 @@ function buyUnit(db, req, res, callback){
 		}
 
 
-		database.read(db, "player", playerQuery, res, function(thisPlayer){
+		database.read(db, "player", playerQuery, function(thisPlayer){
 			console.log("Player has " + thisPlayer[0].assets.resources.coin.count + " coin");
 
 			if(thisPlayer[0].assets.resources.coin.count >= unitCost[req.body.unit]){
@@ -210,25 +210,19 @@ function buyUnit(db, req, res, callback){
 					}
 				}													
 
-				database.update(db, "player", playerQuery, updatedStats, res, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
+				database.update(db, "player", playerQuery, updatedStats, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
 					console.log("Successfully updated player coin count!");
 
-					database.create(db, "unit", newUnit, res, function createUnitForPlayer(newUnit){		// this creates the new unit
-						
-						var unitQuery = {
-							owner: thisPlayer[0].name,
-							type: req.body.unit
-						}
 
-						database.read(db, "unit", unitQuery, res, function returnNumOfUnits(unitNum){		// this returns how much of that unit the player has
+					createUnit(db, newUnit, function createUnitForPlayer(newUnit, unitNum){
+
 							var updatedPlayerData = {
-    							unitCount: unitNum.length,
+    							unitCount: unitNum,
     							coinCount: updatedPlayer.assets.resources.coin.count
     						}
-    						callback({status: "success", data: updatedPlayerData});
-						});
-					});
 
+    						callback({status: "success", data: updatedPlayerData});
+					});
 				})
 			} else {
 				callback({status: "fail", message: "Not enough coin"});
@@ -241,15 +235,15 @@ function buyUnit(db, req, res, callback){
 
 
 
-function createUnit(newUnit){
-	database.create(db, "unit", newUnit, res, function createUnitForPlayer(newUnit){		// this creates the new unit
+function createUnit(db, newUnit, callback){
+	database.create(db, "unit", newUnit, function createUnitForPlayer(createdUnit){		// this creates the new unit
 		var unitQuery = {
-			owner: thisPlayer[0].name,
-			type: unit
+			owner: createdUnit.owner,
+			type: newUnit.type
 		}
 
-		database.read(db, "unit", unitQuery, res, function returnNumOfUnits(unitNum){		// this returns how much of that unit the player has
-			return unitNum;
+		database.read(db, "unit", unitQuery, function returnNumOfUnits(unitNum){		// this returns how much of that unit the player has
+			callback(createdUnit, unitNum.length)
 		});
 	});
 }

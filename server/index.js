@@ -7,7 +7,7 @@ const express = require("express");                     // express
 const MongoClient = require('mongodb').MongoClient;     // talk to mongo
 const bodyParser = require('body-parser');              // parse request body
 var session = require('express-session')                // create sessions
-var db;                                                 // placeholder for our database
+//var db;                                                 // placeholder for our database
 
 const app = express();
 app.set("port", process.env.PORT || 3000)               // we're gonna start a server on whatever the environment port is or on 3000
@@ -74,7 +74,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
     /* CREATE NEW PLAYER */
     app.post("/signup", function(req, res){  
-        dbops.createNewPlayer(db, req, res, function tryToSignup(response){        
+        dbops.createNewPlayer(db, req, function tryToSignup(response){        
             if(response.status == "fail"){
                 res.render("signup", {error: response.message});
             } else if(response.status == "success"){
@@ -91,7 +91,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     });
 
     app.post("/login", function(req, res){
-        dbops.login(db, req, res, function tryToLogin(response){
+        dbops.login(db, req, function tryToLogin(response){
             if(response.status == "fail"){
                 res.render("login", {error: response.message});
             } else if(response.status == "success"){
@@ -124,7 +124,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
     app.get("/game-info", function(req, res){
         if(req.session.user){
-            gameData = dbops.getGameData(db, req, res, function sendGameData(gameData){
+            gameData = dbops.getGameData(db, req, function sendGameData(gameData){
                 res.send(gameData);
             })
         } else {
@@ -134,7 +134,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     });
 
     app.post("/buy-unit", function(req, res){
-        dbops.buyUnit(db, req, res, function(response){
+        dbops.buyUnit(db, req, function(response){
             if(response.status == "success"){
                 res.send(response)
             } else {

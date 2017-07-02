@@ -1,4 +1,4 @@
-function create(db, col, obj, res, callback){
+function create(db, col, obj, callback){
     console.log("DB: creating");
     db.collection(col).save(obj, function(err, result){
         if (err){
@@ -11,7 +11,7 @@ function create(db, col, obj, res, callback){
     })
 }
 
-function read(db, col, obj, res, callback){                                
+function read(db, col, obj, callback){                                
     console.log("DB: reading");
     db.collection(col).find(obj).toArray(function(err, result){
         if (err){
@@ -24,7 +24,7 @@ function read(db, col, obj, res, callback){
     })
 }
 
-function update(db, col, item, query, res, callback){
+function update(db, col, item, query, callback){
     console.log("DB: updating");
     console.log("item is: ");
     console.log(item);
@@ -33,7 +33,7 @@ function update(db, col, item, query, res, callback){
 
     db.collection(col).update(item, query, function displayAfterUpdating(){
         console.log("Updated successfully! Fetching object: ");
-        read(db, col, item, res, function showUpdated(updatedItem){           // do we need to find the item again?
+        read(db, col, item, function showUpdated(updatedItem){           // do we need to find the item again?
             console.log("HERE IT IS:");
             console.log(updatedItem[0]);
             callback(updatedItem[0]);
@@ -42,7 +42,7 @@ function update(db, col, item, query, res, callback){
 }
 
 
-function remove(db, col, query, res, callback){
+function remove(db, col, query, callback){
     console.log("DB: deleting");
     db.collection(col).remove(query, function removeThis(err, result) {
         if (err){
