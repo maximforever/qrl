@@ -1,0 +1,17 @@
+
+<p>Available buildings:</p>
+<% var available = 0 %>
+<% Object.keys(buildings).forEach(function(bldg){  %>  
+   
+    <% building = buildings[bldg]%>
+    <% if(!building.built && building != "walls"){ %>
+        <button class = "build-action" id = "<%= building.type %>"><%= building.name %></button> cost: <%= building.cost %>
+        <br>
+        <% available++ %>
+    <% } %>
+<% }) %>
+
+<% if(available == 0){ %>
+    <p>You've built everything available</p>
+<% } %>
+

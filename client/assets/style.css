@@ -27,6 +27,14 @@
 	text-align: center;
 }
 
+
+/* in game */
+
+button {
+    width: 30%;
+}
+
+
 .control-panel {
 	background: gray;
 	display: block;
@@ -43,4 +51,45 @@
 
 .tile:hover {
 	background: yellow;
+}
+
+#opponents, #map, .bldg{
+    display: none;
+}
+
+
+
+.popup {
+    height: 40%;
+    width: 60%;
+    border: 1px solid red;
+    z-index: 1;
+    position: absolute;
+    top: 10%;
+    left: 20%;
+    background: white;
+    display: none;
+}
+
+.popup-controls {
+    min-height: 2.5em;
+}
+
+.popup button {
+    width: 40%;
+}
+
+#popup-content {
+    padding-left: 10%; 
+    padding-right: 10%;
+}
+
+
+#close {
+    float: right;
+    font-size: 2em;
+}
+
+#close:hover {
+    color: red;
 }

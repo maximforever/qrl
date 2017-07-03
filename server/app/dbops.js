@@ -29,30 +29,60 @@ function createNewPlayer(db, req, callback){
 	            city: {
 	                name: "TBD",
 	                buildings: {
-	                    barracks: 0,
-	                    granary: 0,
+	                    barracks: {
+	                    	name: "Barracks",
+	                    	type: "barracks",
+	                    	built: false,
+	                    	level: 0,
+	                    	hp: 0,
+	                    	max_hp: 200,
+	                    	cost: 300
+	                    },
+	                    granary: {
+	                    	name: "Granary",
+	                    	type: "granary",
+	                    	built: false,
+	                    	level: 0,
+	                    	hp: 0,
+	                    	max_hp: 300,
+	                    	max_food: 0,
+	                    	cost: 500
+	                    },
 	                    citadel: {
+	                    	name: "Citadel",
+	                    	type: "citadel",
+	                    	built: true,
 	                        walls: "wood",
 	                        hp: 100,
+	                        level: 1,
 	                        max_hp: 100
 	                    },
 	                    walls: {
+	                    	built: true,
 	                        east: {
+	                        	name: "Eastern wall",
+	                        	type: "east-wall",
 	                            material: "wood",
 	                            hp: 100,
 	                            max_hp: 100
 	                        },
 	                        west: {
+	                        	name: "Western wall",
+	                        	type: "west-wall",
 	                            material: "wood",
 	                            hp: 100,
 	                            max_hp: 100
 	                        },
 	                        north: {
+	                        	name: "Northern wall",
+	                        	type: "north-wall",
 	                            material: "wood",
 	                            hp: 100,
 	                            max_hp: 100
 	                        },
 	                        south: {
+	                        	name: "Southern wall",
+	                        	type: "south-wall",
 	                            material: "wood",
 	                            hp: 100,
 	                            max_hp: 100
@@ -151,7 +181,7 @@ function login(db, req, callback){
 function getGameData(db, req, callback){
 
 	/*
-		1. get the players' data, filter our player
+		1. get the players, filter our player
 		2. get all the units belonging to that player
 		3. get 
 
@@ -168,7 +198,7 @@ function getGameData(db, req, callback){
 	database.read(db, "player", playerQuery, function(newestPlayerData){
 		database.read(db, "unit", unitQuery, function(newestUnitData){
 
-			var updatedData = {
+			var updatedData = { 
 				playerData: newestPlayerData[0].assets,
 				unitData: newestUnitData
 			}
@@ -233,6 +263,69 @@ function buyUnit(db, req, callback){
 	}
 }
 
+function build(db, req, callback){
+
+	if(req.session.user){				// let's make sure the player is logged in
+		var playerQuery = {
+			name: req.session.user.name
+		}
+
+		database.read(db, "player", playerQuery, function(thisPlayer){
+
+			var construction = thisPlayer[0].assets.city.buildings[req.body.building];
+
+
+			console.log("Player has " + thisPlayer[0].assets.resources.coin.count + " coin");
+			console.log("Building costs " + construction.cost);
+
+			if(!construction.built){
+				if(thisPlayer[0].assets.resources.coin.count >= construction.cost){
+					console.log("got enough coin to buy a " + req.body.building)
+					var count = "resources.coin.count";
+
+					var updatedStats = {
+						$inc: {
+							"assets.resources.coin.count": - construction.cost,		// decrease how much coin the player has
+						}
+					}													
+
+					database.update(db, "player", playerQuery, updatedStats, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
+						console.log("Successfully updated player coin count!");
+
+						var hp = ("assets.city.buildings." + [req.body.building] + ".hp").toString();
+						var built = ("assets.city.buildings." + [req.body.building] + ".built").toString();
+
+
+
+
+						var updatedBuilding = {
+							$set: {
+	/*							hp: construction.max_hp,
+								built: true*/
+							}
+						}	
+
+						updatedBuilding.$set[hp] = construction.max_hp;
+						updatedBuilding.$set[built] = true;
+
+						database.update(db, "player", playerQuery, updatedBuilding, function confirmUpdatedBuilding(updatedPlayer){
+	    					callback({status: "success"});
+						});
+					})
+				} else {
+					callback({status: "fail", message: "Not enough coin"});
+				} 
+			} else {
+				callback({status: "fail", message: ("You already built a " + construction.type) });
+			}
+		})
+	} else {
+		callback({status: "fail", message: "You must be logged in"});
+	}
+
+
+};
+
 
 
 function createUnit(db, newUnit, callback){
@@ -249,6 +342,15 @@ function createUnit(db, newUnit, callback){
 }
 
 
+function apocalypse(db, callback){
+	database.remove(db, "player", {}, function(){
+		database.remove(db, "unit", {}, function(){
+			database.remove(db, "action", {}, function(){
+				callback();
+			})
+		})
+	})
+}
 
 
 
@@ -257,3 +359,5 @@ module.exports.createNewPlayer = createNewPlayer;
 module.exports.login = login;
 module.exports.getGameData = getGameData;
 module.exports.buyUnit = buyUnit;
+module.exports.build = build;
+module.exports.apocalypse = apocalypse;

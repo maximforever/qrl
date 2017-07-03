@@ -147,6 +147,37 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     });
 
 
+    app.get("/build", function(req, res){
+        dbops.getGameData(db, req, function(updatedData){
+            res.render("modals/build-modal", {buildings: updatedData.playerData.city.buildings});
+        }) 
+    });
+
+    app.post("/build", function(req, res){
+        dbops.build(db, req, function(response){
+            if(response.status == "success"){
+                res.send(response)
+            } else {
+                res.send({message: response.message})
+            }
+        })
+    });
+
+
+    app.get("/apocalypse", function(req, res){
+        dbops.apocalypse(db, function restart(){
+            req.session.user = null;
+            req.session.expires = new Date(Date.now);       /* not sure if this is needed */
+            req.session.message = "Evetything's gone";
+            res.redirect("/signup");
+        });
+    })
+
+    app.get("/allplayers", function(req, res){
+        res.render("allplayers");
+    })
+
+
 /* END ROUTES */
 
 

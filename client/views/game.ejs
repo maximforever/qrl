@@ -3,24 +3,58 @@
 
 
 <div class = "control-panel">
-	<div class = "tile city"> City </div>
-	<div class = "tile opponents"> Opponents </div>
-	<div class = "tile map"> Map </div>
+	<div class = "tile" data-type = "city"> City </div>
+	<div class = "tile" data-type = "opponents"> Opponents </div>
+	<div class = "tile" data-type = "map"> Map </div>
+</div>
+<!-- 
+<p>This is a game</p>
+<button class = "buy-button" id = "scout">Buy a scout</button>
+ -->
+
+<div id = "city" class = "screen">
+    City: <span id = "city-name"></span><br>
+    Coin: <span id = "coin"></span><br>
+    Name: <span id = "player-name"></span><br>
+
+    <div class = "buildings">
+        <div class = "bldg" id = "barracks">
+            <span class = "name"></span>, lvl: <span class = "level"></span>, hp: <span class = "hp"></span>/<span class = "max-hp"></span>
+            <button>Upgrade <span class = "name"></span></button>
+        </div>
+        <div class = "bldg" id = "granary">
+            <span class = "name"></span>, lvl: <span class = "level"></span>, hp: <span class = "hp"></span>/<span class = "max-hp"></span>
+            <button>Upgrade <span class = "name"></span></button>
+        </div>
+        <div class = "bldg" id = "citadel">
+            <span class = "name"></span>, lvl: <span class = "level"></span>, hp: <span class = "hp"></span>/<span class = "max-hp"></span>
+            walls: <span id = "citadel-walls"></span>
+            <button>Upgrade <span class = "name"></span></button>
+        </div>
+    </div>
+
+    <button class = "build">Build</button>
 
 </div>
 
-<p>This is a game</p>
-<p id = "coin"></p>
-<p id = "player-name"></p>
-<p id = "scout-count"></p>
 
 
-<button class = "buy-button" id = "scout">Buy a scout</button>
+<div id = "opponents" class = "screen">
+    <p>I'm a list of opponents</p>
+</div>
 
 
+<div id = "map" class = "screen">
+    <p>I'm a map</p>
+</div>
 
 
-
+<div class = "popup">
+    <div class = "popup-controls">
+        <span id = "close" class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+    </div>
+    <div id = "popup-content"></div>
+</div>
 
 
 <% include partials/_footer.ejs %>
