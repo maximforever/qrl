@@ -146,8 +146,11 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         })
     });
 
+    /* modals */
+
 
     app.get("/build", function(req, res){
+        console.log("BUILDING!")
         dbops.getGameData(db, req, function(updatedData){
             res.render("modals/build-modal", {buildings: updatedData.playerData.city.buildings});
         }) 
@@ -163,6 +166,47 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         })
     });
 
+
+    app.get("/buy-units", function(req, res){
+        dbops.getGameData(db, req, function(updatedData){
+            res.render("modals/buy-unit-modal", {buildings: updatedData.playerData.city.buildings});
+        }) 
+    });
+
+    app.post("/buy-units", function(req, res){
+        dbops.buyUnit(db, req, function(response){
+            if(response.status == "success"){
+                res.send(response)
+            } else {
+                res.send({message: response.message})
+            }
+        })
+    });
+
+   app.get("/workers", function(req, res){
+        dbops.getGameData(db, req, function(updatedData){
+
+
+            workerUnits = updatedData.unitData.filter(function(el){         // this is how we get from all units to individual units
+                return el.type == "worker"
+            })
+
+            res.render("modals/worker-modal", {workers: workerUnits});
+        }) 
+    });
+
+    app.post("/workers", function(req, res){
+        dbops.build(db, req, function(response){
+            if(response.status == "success"){
+                res.send(response)
+            } else {
+                res.send({message: response.message})
+            }
+        })
+    });
+
+
+    /* delete everything*/
 
     app.get("/apocalypse", function(req, res){
         dbops.apocalypse(db, function restart(){

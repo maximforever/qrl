@@ -7,7 +7,7 @@ function main(){
     getUpdateInfo();
 
     var gameLoop = setInterval(function(){
-    	getUpdateInfo()
+    	getUpdateInfo();
     }, 5000);		// let's fetch new data every, eh, 5 seconds
 
 
@@ -23,6 +23,7 @@ function main(){
 
                 	player = newData.playerData;
                 	units = newData.unitData;
+                    opponents = newData.opponentData;
 
                     scouts = units.filter(function(el){         // this is how we get from all units to individual units
                         return el.type == "scout"
@@ -30,6 +31,14 @@ function main(){
 
                     footmen = units.filter(function(el){
                         return el.type == "footman"
+                    })
+
+                    archers = units.filter(function(el){
+                        return el.type == "archer"
+                    })
+
+                    workers = units.filter(function(el){
+                        return el.type == "worker"
                     })
 
                     /*buildings: */
@@ -55,14 +64,35 @@ function main(){
                     console.log("Received a response from the server.");
                     $("#city-name").text(player.city.name)
                     $("#player-name").text(player.name);
-                    $("#scout-count").text(footmen.length);
                     $("#coin").text(player.resources.coin.count);
+
+                    $("#scout-count").text(scouts.length);
+                    $("#scout-lvl").text(player.city.buildings.barracks.level);
+
+                    $("#footman-count").text(footmen.length);
+                    $("#footman-lvl").text(player.city.buildings.barracks.level);
+
+                    $("#archer-count").text(archers.length);
+                    $("#archer-lvl").text(player.city.buildings.barracks.level);
+
+                    $("#worker-count").text(workers.length);
+                    $("#worker-lvl").text(player.city.buildings.granary.level);
+
+
+                    /* opponents */
+                    $(".opponents").empty();
+                    opponents.forEach(function(enemy){           //
+                        console.log("enemy:");
+                        console.log(enemy);
+                        $(".opponents").append(enemy.name + "<br>");
+                    });
+                        
 
                 }
             })
     }
 
-    $(".buy-button").click(function(){
+    $("body").on("click", ".buy-button", function(){
 
         var selectedUnit =  $(this).attr("id");
         console.log("Gonna try to buy a " + selectedUnit);
@@ -79,16 +109,20 @@ function main(){
             success: function(result){
                 $(".unit").css("color", "black");
                 if(result.status == "success"){
-                    console.log("boom. bought a " + selectedUnit +  ". buying people is rad!");
+                   /* console.log("boom. bought a " + selectedUnit +  ". buying people is rad!");
                     var unitCountSelector = "#" + selectedUnit + "-count";
                     $(unitCountSelector).text(result.unitCount).css("color", "blue");
                     $("#coin").text(result.data.coinCount).css("color", "blue");
-
+*/
                     /* Alteratively: */
 
                     getUpdateInfo();
+                    $("#coin").css("color", "blue");
+                    setTimeout(function(){                          // keep the coins blue for 5 seconds
+                        $("#coin").css("color", "black");
+                    }, 5000)
                 } else {
-                    $(".error").text(result.message);
+                    $("#error").text(result.message);
                     $("#coin").css("color", "red");
                 }
             }
@@ -105,7 +139,7 @@ function main(){
             3. if successful, display building, decrease money
         */
 
-        $(".popup").toggle();
+        $(".popup").show();
 
 
         $.ajax({
@@ -117,6 +151,35 @@ function main(){
             }
         })
     });
+
+    $(".buy-units").click(function(){
+
+        $(".popup").show();
+
+        $.ajax({
+            type: "get",
+            url: "/buy-units",
+            success: function(result){
+                $("#popup-content").empty();
+                $("#popup-content").append(result);
+            }
+        })
+    });
+
+    $(".workers").click(function(){
+
+        $(".popup").show();
+
+        $.ajax({
+            type: "get",
+            url: "/workers",
+            success: function(result){
+                $("#popup-content").empty();
+                $("#popup-content").append(result);
+            }
+        })
+    });
+
 
     $("body").on("click", ".build-action", function(){ 
 
@@ -132,19 +195,61 @@ function main(){
             data: body,
             success: function(result){
                if(result.status == "success"){
-                    $(".popup").hide();
                     getUpdateInfo();
+                    $.ajax({
+                        type: "get",
+                        url: "/build",
+                        success: function(result){
+                            $("#popup-content").empty();
+                            $("#popup-content").append(result);
+                        }
+                    })
                 } else {
-                    $(".error").text(result.message);
+                    $("#error").text(result.message);
                 }
             }
         })
     });
 
 
+    /*
+
+    // use this to assign workers
+
+    $("body").on("click", ".assign-worker", function(){       
+
+        var bldg = $(this).attr("id");
+
+        var body = {
+            building: bldg
+        }
+
+        $.ajax({
+            type: "post",
+            url: "/build",
+            data: body,
+            success: function(result){
+               if(result.status == "success"){
+                    getUpdateInfo();
+                    $.ajax({
+                        type: "get",
+                        url: "/build",
+                        success: function(result){
+                            $("#popup-content").empty();
+                            $("#popup-content").append(result);
+                        }
+                    })
+                } else {
+                    $("#error").text(result.message);
+                }
+            }
+        })
+    });*/
 
 
-    $("#close").click(function(){               /* closes the popup*/
+
+
+    $("#close").click(function(){                           /* closes the popup*/
         $(".popup").hide();
     })
    
@@ -158,7 +263,7 @@ function main(){
         var thisScreen = $(this).attr("data-type");
         $(".screen").hide();
         $("#"+thisScreen).show();
-
+        $("#message, #error").text("");
     })
 
 }

@@ -13,11 +13,13 @@
  -->
 
 <div id = "city" class = "screen">
+    Player: <span class = "bold" id = "player-name"></span><br>
     City: <span id = "city-name"></span><br>
     Coin: <span id = "coin"></span><br>
-    Name: <span id = "player-name"></span><br>
+    
 
-    <div class = "buildings">
+    <div class = "panel-section buildings">
+        <p class = "bold">Buildings:</p>
         <div class = "bldg" id = "barracks">
             <span class = "name"></span>, lvl: <span class = "level"></span>, hp: <span class = "hp"></span>/<span class = "max-hp"></span>
             <button>Upgrade <span class = "name"></span></button>
@@ -31,16 +33,35 @@
             walls: <span id = "citadel-walls"></span>
             <button>Upgrade <span class = "name"></span></button>
         </div>
+        <hr>
+        <div class = "new">
+            <button class = "build">Build</button>
+        </div>
     </div>
 
-    <button class = "build">Build</button>
+    <div class = "panel-section units">
+        <p class = "bold">Units:</p>
+        Scouts: <span id = "scout-count"></span>, lvl: <span id = "scout-lvl"></span><br>
+        Footmen: <span id = "footman-count"></span>, lvl: <span id = "footman-lvl"></span><br>
+        Archers: <span id = "archer-count"></span>, lvl: <span id = "archer-lvl"></span><br>
+        <button class = "workers">Workers (<span id = "worker-count"></span>)</button><br>
+        <hr>
+        <div class = "new">
+            <button class = "buy-units">Create</button>
+        </div>
+    </div>
+
+    
 
 </div>
 
 
 
 <div id = "opponents" class = "screen">
-    <p>I'm a list of opponents</p>
+    <div class = "panel-section">
+        <p class = "bold">Opponents:</p>
+        <div class = "opponents">
+    </div>
 </div>
 
 

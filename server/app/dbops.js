@@ -117,7 +117,7 @@ function createNewPlayer(db, req, callback){
             }
         }
 
-        var scout = {
+        var scout = {						/* this is a one-off unit spawn because the player hasn't logged in yet*/
 			type: "scout",
 			lastUpdated: Date.now(),
 			owner: newPlayer.name,
@@ -183,13 +183,12 @@ function getGameData(db, req, callback){
 	/*
 		1. get the players, filter our player
 		2. get all the units belonging to that player
-		3. get 
+		3. get actions
 
 	*/
 
-	var playerQuery = {
-		name: req.session.user.name
-	}
+	var playerQuery = {}				// we want this to be empty - want to get all the players	
+										// EVENTUALLY, WE'LL WANT GAME ID TO BE EQUAL					
 
 	var unitQuery = {
 		owner: req.session.user.name
@@ -198,9 +197,21 @@ function getGameData(db, req, callback){
 	database.read(db, "player", playerQuery, function(newestPlayerData){
 		database.read(db, "unit", unitQuery, function(newestUnitData){
 
+			thisPlayer = newestPlayerData.filter(function(pl){         // this is how we get from all players to our player
+                return pl.name == req.session.user.name
+            })
+
+            otherPlayers = newestPlayerData.filter(function(pl){         
+                return pl.name != req.session.user.name
+            })
+
+            console.log("thisPlayer: ");
+            console.log(thisPlayer);
+
 			var updatedData = { 
-				playerData: newestPlayerData[0].assets,
-				unitData: newestUnitData
+				playerData: thisPlayer[0].assets,
+				unitData: newestUnitData,
+				opponentData: otherPlayers
 			}
 			callback(updatedData);
 		})
@@ -218,44 +229,49 @@ function buyUnit(db, req, callback){
 
 		database.read(db, "player", playerQuery, function(thisPlayer){
 			console.log("Player has " + thisPlayer[0].assets.resources.coin.count + " coin");
+			console.log(req.body.unit + " costs " + unitCost[req.body.unit]);
 
-			if(thisPlayer[0].assets.resources.coin.count >= unitCost[req.body.unit]){
+			if(techAvailable(req.body.unit, thisPlayer[0])){
+				if(thisPlayer[0].assets.resources.coin.count >= unitCost[req.body.unit]){
 
-				console.log("got enough coin to buy a " + req.body.unit)
+					console.log("got enough coin to buy a " + req.body.unit)
 
-				var newUnit = {
-					type: req.body.unit,
-					lastUpdated: Date.now(),
-					owner: thisPlayer[0].name,
-					job: "none",
-					jobMessage: "none",
-					id: Date.now()
-				}
-
-				var count = "resources.coin.count";
-
-				var updatedStats = {
-					$inc: {
-						"assets.resources.coin.count": - (unitCost[req.body.unit])		// decrease how much coin the player has
+					var newUnit = {
+						type: req.body.unit,
+						lastUpdated: Date.now(),
+						owner: thisPlayer[0].name,
+						job: "none",
+						jobMessage: "none",
+						id: Date.now()
 					}
-				}													
 
-				database.update(db, "player", playerQuery, updatedStats, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
-					console.log("Successfully updated player coin count!");
+					var count = "resources.coin.count";
+
+					var updatedStats = {
+						$inc: {
+							"assets.resources.coin.count": - (unitCost[req.body.unit])		// decrease how much coin the player has
+						}
+					}													
+
+					database.update(db, "player", playerQuery, updatedStats, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
+						console.log("Successfully updated player coin count!");
 
 
-					createUnit(db, newUnit, function createUnitForPlayer(newUnit, unitNum){
+						createUnit(db, newUnit, function createUnitForPlayer(newUnit, unitNum){
 
-							var updatedPlayerData = {
-    							unitCount: unitNum,
-    							coinCount: updatedPlayer.assets.resources.coin.count
-    						}
+								var updatedPlayerData = {
+	    							unitCount: unitNum,
+	    							coinCount: updatedPlayer.assets.resources.coin.count
+	    						}
 
-    						callback({status: "success", data: updatedPlayerData});
-					});
-				})
+	    						callback({status: "success", data: updatedPlayerData, message: "", error: ""});
+						});
+					})
+				} else {
+					callback({status: "fail", message: "Not enough coin"});
+				}
 			} else {
-				callback({status: "fail", message: "Not enough coin"});
+				callback({status: "fail", message: "You can't build these yet."});
 			}
 		})
 	} else {
@@ -294,6 +310,7 @@ function build(db, req, callback){
 
 						var hp = ("assets.city.buildings." + [req.body.building] + ".hp").toString();
 						var built = ("assets.city.buildings." + [req.body.building] + ".built").toString();
+						var lvl = ("assets.city.buildings." + [req.body.building] + ".level").toString();
 
 
 
@@ -307,9 +324,10 @@ function build(db, req, callback){
 
 						updatedBuilding.$set[hp] = construction.max_hp;
 						updatedBuilding.$set[built] = true;
+						updatedBuilding.$set[lvl] = 1;
 
 						database.update(db, "player", playerQuery, updatedBuilding, function confirmUpdatedBuilding(updatedPlayer){
-	    					callback({status: "success"});
+	    					callback({status: "success", message: "", error: ""});
 						});
 					})
 				} else {
@@ -352,6 +370,25 @@ function apocalypse(db, callback){
 	})
 }
 
+function techAvailable(unit, player){						// check if we have the right building to create this unit
+	console.log("testing unit " + unit);
+
+	if(unit == "footman" || unit == "archer"){
+		if(player.assets.city.buildings.barracks.built){
+			console.log("You have a barracks");
+			return true;
+		} else {
+			console.log("Build a barracks");
+			return false;
+		}
+
+
+	}
+
+
+
+	return true;				// false if we don't
+}
 
 
 

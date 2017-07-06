@@ -1,0 +1,15 @@
+
+<p>Available buildings:</p>
+<% var available = 0 %>
+<% workers.forEach(function(worker){  %>  
+
+    Worker <%= worker.id %>: <%= worker.job %> 
+    <br>
+    <% available++ %>
+    
+<% }) %>
+
+<% if(available == 0){ %>
+    <p>You've built everything available</p>
+<% } %>
+

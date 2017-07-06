@@ -1,10 +1,10 @@
 /* alert messages, header */
 
-.error {
+#error {
     color: red;
 }
 
-.message {
+#message {
     color: blue;
 }
 
@@ -25,6 +25,7 @@
 	padding: 0;
 	padding-top: 2%;
 	text-align: center;
+    min-height: 3.5em;
 }
 
 
@@ -57,10 +58,22 @@ button {
     display: none;
 }
 
+.panel-section {
+    margin: 10px 0px;
+    padding: 10px;
+    border: 1px solid black;
+}
 
+.bold {
+    font-weight: bold;
+}
+
+.new {
+    text-align: center;
+}
 
 .popup {
-    height: 40%;
+    min-height: 40%;
     width: 60%;
     border: 1px solid red;
     z-index: 1;
@@ -80,8 +93,7 @@ button {
 }
 
 #popup-content {
-    padding-left: 10%; 
-    padding-right: 10%;
+    padding: 0 10% 10% 10%;
 }
 
 
