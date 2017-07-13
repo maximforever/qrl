@@ -371,7 +371,7 @@ function assignWorker(db, req, callback){
 						}													
 
 						database.update(db, "unit", unitQuery, updatedStats, function confirmUpdatedUnit(updatedUnit){
-							console.log("Unit job is now " + updatedUnit.job);
+							console.log("Unit job is now " + updatedUnit.job)
 							callback({status: "success", message: "unit successfully updated!"});
 						});	
 				} else {

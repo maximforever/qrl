@@ -21,6 +21,7 @@ app.use(express.static('client'));         // sets the correct views for the CSS
 
 
 const dbops = require("./app/dbops");
+const onload = require("./app/onload");
 
 
 MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
@@ -58,7 +59,6 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         req.session.message = null;
         next();
     })
-
 
 
 /* ROUTES */
@@ -117,6 +117,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         if(!req.session.user){
             res.redirect("/login");
         } else {
+            onload.addResources(db);
             res.render("game");
         }
 
@@ -235,7 +236,58 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
 
 
+/* TEST*/
 
+
+var trigger = false;
+
+app.get("/async", function (req, res){
+    res.render("async");
+});
+
+app.post("/async", function (req, res){
+    hold(respond);
+
+    function respond(){
+        res.send("hello world!");
+    }
+    
+});
+
+
+function hold(callback){
+
+    a();
+
+    function a(){
+         setTimeout(function(){
+            if(trigger){
+                callback();
+            } else {
+                console.log("firing a()!");
+                a();
+            }
+            
+        }, 100);
+    }
+}
+
+app.post("/trigger", function (req, res){
+   trigger = true;
+   //console.log("trigger is: " + trigger);
+   res.send("success!");
+});
+
+
+app.post("/false", function (req, res){
+   trigger = false;
+   res.send("success!");
+});
+
+
+
+
+/* END TEST */
 
 
 

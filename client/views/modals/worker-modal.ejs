@@ -5,11 +5,11 @@
     
     <span id = <%= worker.id %>>
         <% if (worker.job == "none"){ %>
-            Free worker:
+            Free (HP: <%= worker.hp %>):
             <button class = "assign-worker" data-id = <%= worker.id %> data-job = "farmer">Farm food</button>
             <button class = "assign-worker" data-id = <%= worker.id %> data-job = "miner">Mine coin</button>
         <% } else { %>
-            <%= worker.job %> <button class = "assign-worker" data-id = <%= worker.id %> data-job = "none">Unassign</button>
+            <%= worker.job %> (HP: <%= worker.hp %> )<button class = "assign-worker" data-id = <%= worker.id %> data-job = "none">Unassign</button>
         <% } %>
 
         <br>
