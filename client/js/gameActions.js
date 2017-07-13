@@ -139,7 +139,7 @@ function main(){
             3. if successful, display building, decrease money
         */
 
-        $(".popup").show();
+        $(".popup").css("display", "block");
 
 
         $.ajax({
@@ -154,6 +154,7 @@ function main(){
 
     $(".buy-units").click(function(){
 
+        console.log("clicked to buy units!");
         $(".popup").show();
 
         $.ajax({
@@ -172,7 +173,7 @@ function main(){
 
         $.ajax({
             type: "get",
-            url: "/workers",
+            url: "/assign",
             success: function(result){
                 $("#popup-content").empty();
                 $("#popup-content").append(result);
@@ -209,6 +210,42 @@ function main(){
                 }
             }
         })
+    });
+
+    $("body").on("click", ".assign-worker", function(){
+
+        workerId = $(this).data("id");
+        workerJob = $(this).data("job");
+
+        var workerData = {
+            id: workerId,
+            job: workerJob
+        }
+
+        $.ajax({
+            type: "post",
+            url: "/assign",
+            data: workerData,
+            success: function(result){
+               if(result.status == "success"){
+                    getUpdateInfo();
+                    $.ajax({
+                        type: "get",
+                        url: "/assign",
+                        success: function(assignResult){
+                            $("#popup-content").empty();
+                            $("#popup-content").append(assignResult);
+                        }
+                    })
+                } else {
+                    $("#error").text(result.message);
+                }
+            }
+        })
+
+
+
+
     });
 
 
@@ -250,7 +287,7 @@ function main(){
 
 
     $("#close").click(function(){                           /* closes the popup*/
-        $(".popup").hide();
+        $(".popup").css("display", "none    ");
     })
    
 
@@ -263,7 +300,7 @@ function main(){
         var thisScreen = $(this).attr("data-type");
         $(".screen").hide();
         $("#"+thisScreen).show();
-        $("#message, #error").text("");
+        
     })
 
 }

@@ -146,6 +146,16 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         })
     });
 
+    app.post("/assign", function(req, res){
+        dbops.assignWorker(db, req, function(response){
+            if(response.status == "success"){
+                res.send(response)
+            } else {
+                res.send({message: response.message})
+            }
+        })
+    });
+
     /* modals */
 
 
@@ -183,10 +193,9 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         })
     });
 
-   app.get("/workers", function(req, res){
+
+   app.get("/assign", function(req, res){
         dbops.getGameData(db, req, function(updatedData){
-
-
             workerUnits = updatedData.unitData.filter(function(el){         // this is how we get from all units to individual units
                 return el.type == "worker"
             })
@@ -195,8 +204,8 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         }) 
     });
 
-    app.post("/workers", function(req, res){
-        dbops.build(db, req, function(response){
+    app.post("/assign", function(req, res){
+        dbops.assignWorker(db, req, function(response){
             if(response.status == "success"){
                 res.send(response)
             } else {

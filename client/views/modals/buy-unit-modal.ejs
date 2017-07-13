@@ -2,14 +2,16 @@
 <p>Buy unit:</p>
     
 <p class = "bold">Civilian units</p>
-<button id = "worker" class = "buy-button">Worker</button><br>         <!-- will need to remove if player has 5 workers -->
-<button id = "scout" class = "buy-button">Scout</button><br>
+<button id = "worker" class = "buy-button">Worker</button> Cost: 50 <br>         <!-- will need to remove if player has 5 workers -->
+<button id = "scout" class = "buy-button">Scout</button> Cost: 50 <br>
 <hr>
 
-    <!-- if player has barracks, let him buy soldiers -->
+<% if (buildings.barracks.built){ %>       <!-- if player has barracks, let him buy soldiers -->
     <p class = "bold">Military units</p>
-    <button id = "footman" class = "buy-button">Footman</button><br>
-    <button id = "archer" class = "buy-button">Archer</button><br>
+    <button id = "footman" class = "buy-button">Footman</button> Cost: 100 <br>
+    <button id = "archer" class = "buy-button">Archer</button> Cost: 200 <br>
 
+
+<% } %>
 
 

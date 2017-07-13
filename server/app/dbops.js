@@ -242,6 +242,7 @@ function buyUnit(db, req, callback){
 						owner: thisPlayer[0].name,
 						job: "none",
 						jobMessage: "none",
+						hp: 100,
 						id: Date.now()
 					}
 
@@ -340,8 +341,49 @@ function build(db, req, callback){
 	} else {
 		callback({status: "fail", message: "You must be logged in"});
 	}
+};
 
+function assignWorker(db, req, callback){
 
+	if(req.session.user){				// let's make sure the player is logged in
+
+		var playerQuery = {
+			name: req.session.user.name
+		}
+
+		database.read(db, "player", playerQuery, function(thisPlayer){
+
+			var unitQuery = {
+				id: parseInt(req.body.id)
+			}
+
+			database.read(db, "unit", unitQuery, function(thisUnit){
+				
+				if(thisUnit[0] && thisUnit[0].hp > 0){
+					console.log("this is a real unit!");
+
+						database.update
+
+						var updatedStats = {
+							$set: {
+								job: req.body.job
+							}
+						}													
+
+						database.update(db, "unit", unitQuery, updatedStats, function confirmUpdatedUnit(updatedUnit){
+							console.log("Unit job is now " + updatedUnit.job);
+							callback({status: "success", message: "unit successfully updated!"});
+						});	
+				} else {
+					callback({status: "fail", message: "This unit does not exist or has died"});
+				}
+			});
+
+		});
+
+	} else {
+		callback({status: "fail", message: "You must be logged in"});
+	}
 };
 
 
@@ -397,4 +439,5 @@ module.exports.login = login;
 module.exports.getGameData = getGameData;
 module.exports.buyUnit = buyUnit;
 module.exports.build = build;
+module.exports.assignWorker = assignWorker;
 module.exports.apocalypse = apocalypse;

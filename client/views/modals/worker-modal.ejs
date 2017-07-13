@@ -1,15 +1,24 @@
 
-<p>Available buildings:</p>
+<p>Available workers:</p>
 <% var available = 0 %>
 <% workers.forEach(function(worker){  %>  
+    
+    <span id = <%= worker.id %>>
+        <% if (worker.job == "none"){ %>
+            Free worker:
+            <button class = "assign-worker" data-id = <%= worker.id %> data-job = "farmer">Farm food</button>
+            <button class = "assign-worker" data-id = <%= worker.id %> data-job = "miner">Mine coin</button>
+        <% } else { %>
+            <%= worker.job %> <button class = "assign-worker" data-id = <%= worker.id %> data-job = "none">Unassign</button>
+        <% } %>
 
-    Worker <%= worker.id %>: <%= worker.job %> 
-    <br>
-    <% available++ %>
+        <br>
+        <% available++ %>
+    </span>
     
 <% }) %>
 
 <% if(available == 0){ %>
-    <p>You've built everything available</p>
+    <p>You haven't hired any workers.</p>
 <% } %>
 
