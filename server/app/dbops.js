@@ -232,41 +232,53 @@ function buyUnit(db, req, callback){
 			console.log(req.body.unit + " costs " + unitCost[req.body.unit]);
 
 			if(techAvailable(req.body.unit, thisPlayer[0])){
+
 				if(thisPlayer[0].assets.resources.coin.count >= unitCost[req.body.unit]){
 
-					console.log("got enough coin to buy a " + req.body.unit)
-
-					var newUnit = {
-						type: req.body.unit,
-						lastUpdated: Date.now(),
+					var unitQuery = {
 						owner: thisPlayer[0].name,
-						job: "none",
-						jobMessage: "none",
-						hp: 100,
-						id: Date.now()
-					}
+						type: "worker"
+					}					
 
-					var count = "resources.coin.count";
+					database.read(db, "unit", unitQuery, function(existingWorkers){
 
-					var updatedStats = {
-						$inc: {
-							"assets.resources.coin.count": - (unitCost[req.body.unit])		// decrease how much coin the player has
-						}
-					}													
+						if(existingWorkers.length < 8 || req.body.unit !== "worker"){
+							console.log("got enough coin to buy a " + req.body.unit)
+							var newUnit = {
+								type: req.body.unit,
+								lastUpdated: Date.now(),
+								owner: thisPlayer[0].name,
+								job: "none",
+								jobMessage: "none",
+								hp: 100,
+								id: Date.now()
+							}
 
-					database.update(db, "player", playerQuery, updatedStats, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
-						console.log("Successfully updated player coin count!");
+							var count = "resources.coin.count";
+
+							var updatedStats = {
+								$inc: {
+									"assets.resources.coin.count": - (unitCost[req.body.unit])		// decrease how much coin the player has
+								}
+							}													
+
+							database.update(db, "player", playerQuery, updatedStats, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
+								console.log("Successfully updated player coin count!");
 
 
-						createUnit(db, newUnit, function createUnitForPlayer(newUnit, unitNum){
+								createUnit(db, newUnit, function createUnitForPlayer(newUnit, unitNum){
 
-								var updatedPlayerData = {
-	    							unitCount: unitNum,
-	    							coinCount: updatedPlayer.assets.resources.coin.count
-	    						}
+										var updatedPlayerData = {
+			    							unitCount: unitNum,
+			    							coinCount: updatedPlayer.assets.resources.coin.count
+			    						}
 
-	    						callback({status: "success", data: updatedPlayerData, message: "", error: ""});
-						});
+			    						callback({status: "success", data: updatedPlayerData, message: "", error: ""});
+								});
+							})
+						} else {
+							callback({status: "fail", message: "You can't have more than 8 workers"});
+						} 
 					})
 				} else {
 					callback({status: "fail", message: "Not enough coin"});
