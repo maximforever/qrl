@@ -12,6 +12,8 @@ function main(){
     }*/
 
 
+/* ASYNC EXPERIMENTS */
+
     $("#async").on("click", function(){
         console.log("Async!");
         $(this).html("Sending request...");

@@ -65,6 +65,7 @@ function main(){
                     $("#city-name").text(player.city.name)
                     $("#player-name").text(player.name);
                     $("#coin").text(player.resources.coin.count);
+                    $("#food").text(player.resources.food.count);
 
                     $("#scout-count").text(scouts.length);
                     $("#scout-lvl").text(player.city.buildings.barracks.level);

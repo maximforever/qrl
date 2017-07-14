@@ -362,11 +362,10 @@ function assignWorker(db, req, callback){
 				if(thisUnit[0] && thisUnit[0].hp > 0){
 					console.log("this is a real unit!");
 
-						database.update
-
 						var updatedStats = {
 							$set: {
-								job: req.body.job
+								job: req.body.job,
+								lastUpdated: Date.now()
 							}
 						}													
 

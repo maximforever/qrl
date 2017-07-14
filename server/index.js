@@ -117,8 +117,9 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         if(!req.session.user){
             res.redirect("/login");
         } else {
-            onload.addResources(db);
-            res.render("game");
+            onload.addResources(db, req, function(){
+                res.render("game");
+            }); 
         }
 
     });
@@ -126,7 +127,10 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     app.get("/game-info", function(req, res){
         if(req.session.user){
             gameData = dbops.getGameData(db, req, function sendGameData(gameData){
-                res.send(gameData);
+                onload.addResources(db, req, function(){
+                    res.send(gameData);
+                }); 
+                
             })
         } else {
             req.session.error = "You're not logged in";
@@ -245,7 +249,9 @@ app.get("/async", function (req, res){
     res.render("async");
 });
 
+
 app.post("/async", function (req, res){
+
     hold(respond);
 
     function respond(){
@@ -264,7 +270,7 @@ function hold(callback){
             if(trigger){
                 callback();
             } else {
-                console.log("firing a()!");
+                console.log("waiting for trigger to repond");
                 a();
             }
             
