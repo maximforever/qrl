@@ -5,7 +5,7 @@
     
     <span id = <%= worker.id %>>
         <% if (worker.job == "none"){ %>
-            Free (HP: <%= worker.hp %>):
+            Free worker (HP: <%= worker.hp %>):
             <button class = "assign-worker" data-id = <%= worker.id %> data-job = "farmer">Farm food</button>
             <button class = "assign-worker" data-id = <%= worker.id %> data-job = "miner">Mine coin</button>
         <% } else { %>

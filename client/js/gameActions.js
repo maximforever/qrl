@@ -249,44 +249,6 @@ function main(){
 
     });
 
-
-    /*
-
-    // use this to assign workers
-
-    $("body").on("click", ".assign-worker", function(){       
-
-        var bldg = $(this).attr("id");
-
-        var body = {
-            building: bldg
-        }
-
-        $.ajax({
-            type: "post",
-            url: "/build",
-            data: body,
-            success: function(result){
-               if(result.status == "success"){
-                    getUpdateInfo();
-                    $.ajax({
-                        type: "get",
-                        url: "/build",
-                        success: function(result){
-                            $("#popup-content").empty();
-                            $("#popup-content").append(result);
-                        }
-                    })
-                } else {
-                    $("#error").text(result.message);
-                }
-            }
-        })
-    });*/
-
-
-
-
     $("#close").click(function(){                           /* closes the popup*/
         $(".popup").css("display", "none    ");
     })

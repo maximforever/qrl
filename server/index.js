@@ -116,10 +116,8 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
         if(!req.session.user){
             res.redirect("/login");
-        } else {
-            onload.addResources(db, req, function(){
-                res.render("game");
-            }); 
+        } else {    
+            res.render("game");
         }
 
     });
