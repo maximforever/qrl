@@ -19,7 +19,7 @@ function main(){
                 url: "/game-info",
                 success: function(newData){
 
-                	console.log(newData);                        // this is the update data we're receiving
+                //	console.log(newData);                        // this is the update data we're receiving
 
                 	player = newData.playerData;
                 	units = newData.unitData;
@@ -60,8 +60,6 @@ function main(){
 
                     $("#citadel-walls").text(player.city.buildings.citadel.walls)
 
-
-                    console.log("Received a response from the server.");
                     $("#city-name").text(player.city.name)
                     $("#player-name").text(player.name);
                     $("#coin").text(player.resources.coin.count);
@@ -81,12 +79,18 @@ function main(){
 
 
                     /* opponents */
+
                     $(".opponents").empty();
-                    opponents.forEach(function(enemy){           //
-                        console.log("enemy:");
-                        console.log(enemy);
-                        $(".opponents").append(enemy.name + "<br>");
-                    });
+
+                    if(opponents.length > 0 ){
+                        opponents.forEach(function(enemy){           //
+                            $(".opponents").append("<span id=" + enemy.name + ">"+enemy.name + "</span>");
+                            $("#" + enemy.name).append("<button class = 'enemy-actions' data-opponent = '" + enemy.name + "'>Actions</button><br>");              
+                        });
+                    } else {
+                        $(".opponents").append("<p>You don't have anyone to play with :*( Get some friends!</p>")
+                    }
+                    
                         
 
                 }
@@ -153,7 +157,7 @@ function main(){
         })
     });
 
-    $(".buy-units").click(function(){
+    $("body").on("click", ".buy-units", function(){
 
         console.log("clicked to buy units!");
         $(".popup").show();
@@ -243,11 +247,32 @@ function main(){
                 }
             }
         })
-
-
-
-
     });
+
+
+    $("body").on("click", ".enemy-actions", function(){
+
+        enemyName = $(this).data("opponent");
+
+        var enemyData = {
+            name: enemyName,
+        }
+
+        $.ajax({
+            type: "get",
+            url: "/enemy-action",
+            data: enemyData,
+            success: function(result){
+               if(result.status == "success"){
+                    $("#popup-content").empty();
+                    $("#popup-content").append(result);
+                } else {
+                    $("#error").text(result.message);
+                }
+            }
+        })
+    });
+
 
     $("#close").click(function(){                           /* closes the popup*/
         $(".popup").css("display", "none    ");

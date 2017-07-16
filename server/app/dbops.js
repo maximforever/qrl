@@ -26,6 +26,7 @@ function createNewPlayer(db, req, callback){
 	                econ_level: 1,
 	                military_level: 1
             	},
+            	allies: [],
 	            city: {
 	                name: "TBD",
 	                buildings: {

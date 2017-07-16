@@ -78,6 +78,8 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
             if(response.status == "fail"){
                 res.render("signup", {error: response.message});
             } else if(response.status == "success"){
+                req.session.user = null;
+                req.session.expires = new Date(Date.now);       /* not sure if this is needed */
                 res.redirect("/login");
             } else {
                 res.render("signup", {error: "Something strange happened"});

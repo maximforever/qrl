@@ -105,3 +105,14 @@ button {
 #close:hover {
     color: red;
 }
+
+#map-container{
+    text-align: center;
+}
+
+#map-graphic {
+    height: 40vh;
+    width: 40vh;
+    border: 1px solid black;
+    margin: auto;
+}
