@@ -1,0 +1,18 @@
+<% include partials/_header.ejs %>
+
+
+
+
+<form action = "/new-game" method = "post">
+    <p>Capital Name:</p>
+    <input type="text" name="capital" id="captal-name" autofocus></input>
+    <br>
+    <br>
+
+    <input type = "submit" id = "new-player-submit" value= "Create new game"></input>
+</form>
+
+
+<% include partials/_footer.ejs %>
+
+<script src = "/js/gameActions.js"></script>

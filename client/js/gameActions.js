@@ -24,6 +24,7 @@ function main(){
                 	player = newData.playerData;
                 	units = newData.unitData;
                     opponents = newData.opponentData;
+                    map = newData.map;
 
                     scouts = units.filter(function(el){         // this is how we get from all units to individual units
                         return el.type == "scout"
@@ -91,7 +92,10 @@ function main(){
                         $(".opponents").append("<p>You don't have anyone to play with :*( Get some friends!</p>")
                     }
                     
-                        
+
+
+                    /* map */
+                    drawMap(map);
 
                 }
             })
@@ -272,6 +276,41 @@ function main(){
             }
         })
     });
+
+
+    /* create map */
+
+    $("body").on("click", "#new-map", function(){
+
+        $.ajax({
+            type: "get",
+            url: "/new-map",
+            success: function(mapData){
+               if(mapData.status == "success"){
+                    drawMap(mapData.map);
+                } else {
+                    $("#error").text(result.message);
+                }
+            }
+        })
+    });
+
+
+
+    function drawMap(map){
+
+        $("#map-graphic").empty();
+
+        map.forEach(function(row){
+            row.forEach(function(tile){
+                $("#map-graphic").append("<span class = ' map-tile " + tile.type + "'>x</span>");
+            })
+            $("#map-graphic").append("<br>");
+        })
+    }
+
+
+
 
 
     $("#close").click(function(){                           /* closes the popup*/

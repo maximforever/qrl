@@ -98,7 +98,17 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
                 res.render("login", {error: response.message});
             } else if(response.status == "success"){
                 req.session.message = "Logged in!"
-                res.redirect("game")
+
+                console.log("Here's the player who logged in: ");
+                console.log(req.session.user);
+
+
+                if (req.session.user.gameID){                                        // need to check if this player is in a game
+                    res.redirect("game");
+                } else {
+                    res.render("intro");
+                }
+
             } else {
                 res.render("login", {error: "Something strange happened"});
             }   
@@ -125,7 +135,10 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     });
 
     app.get("/game-info", function(req, res){
-        if(req.session.user){
+
+        console.log(req.session.user)
+
+        if(req.session.user && req.session.user.gameID){                        // if this user is logged in AND has a game ID
             gameData = dbops.getGameData(db, req, function sendGameData(gameData){
                 onload.addResources(db, req, function(){
                     res.send(gameData);
@@ -236,11 +249,44 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     })
 
 
+    /* create map */
+
+    app.get("/new-map", function(req, res){
+        dbops.createMap(db, req, function sendMap(response){
+            if(response.status == "success"){
+                res.send(response)
+            } else {
+                res.send({message: response.message})
+            }
+        });
+    })
+
+    app.get("/allplayers", function(req, res){
+        res.render("allplayers");
+    })
+
+
+    /* create game */
+
+    app.post("/new-game", function(req, res){
+        dbops.createNewGame(db, req, function redirectToGame(game){
+            res.redirect("/game");
+        });
+    })
+
+
+    app.post("/invite", function(req, res){
+        dbops.invite(db, req, function redirectToGame(game){
+            res.redirect("/game");
+        });
+    })
+
+
 /* END ROUTES */
 
 
 
-/* TEST*/
+/* ASYNC TEST, IGNORE */
 
 
 var trigger = false;

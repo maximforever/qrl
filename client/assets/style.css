@@ -116,3 +116,21 @@ button {
     border: 1px solid black;
     margin: auto;
 }
+
+
+/*  map styling */
+
+.map-tile {
+    padding: 8% 4%;
+  //  border: 1px solid black;
+}
+
+.grass {
+    color: #1C8E20;
+}
+
+.water {
+    color: #1561C4;
+}
+
+

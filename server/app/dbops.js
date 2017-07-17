@@ -14,6 +14,41 @@ var unitCost = {
 	"archer": 200
 }
 
+
+function createNewGame(db, req, callback){
+
+	newGameMap = createMap(db, req, function createGame(mapForGame){
+
+		if(req.body.gameID == null){
+			var newGame = {
+				id: Date.now(),
+				status: "setup",
+				leader: req.session.user.name,
+				players: [req.session.user.name],
+				map: mapForGame.map
+			}
+
+			database.create(db, "game", newGame, function(createdGame){												// create new game in DB
+				console.log("Created Game: ");
+				console.log(createdGame.ops[0]);			// no idea why we need to do this here instead of just createdGame[0] as we would everywhere else
+				var gameUpdate = {$set: {
+					gameID: createdGame.ops[0].id,
+					"assets.city.name": req.body.capital
+				}}
+
+				database.update(db, "player", {name: newGame.leader}, gameUpdate, function(updatedPlayer){			// set leader gameID to the newly created game ID
+					callback({status: "success", game: createdGame})
+				})	
+			})
+
+		} else {
+			callback({status: "fail", message: "Already in a game"})
+		}
+
+	});
+}
+
+
 function createNewPlayer(db, req, callback){
 	if((req.body.name).replace(/\s/g, '').length > 0){    	// let's make sure the input name isn't empty  
 		var newPlayer = {
@@ -188,33 +223,47 @@ function getGameData(db, req, callback){
 
 	*/
 
-	var playerQuery = {}				// we want this to be empty - want to get all the players	
+
+	var playerQuery = {
+		gameID: req.session.user.gameID
+	}				// we want this to be empty - want to get all the players	
 										// EVENTUALLY, WE'LL WANT GAME ID TO BE EQUAL					
 
 	var unitQuery = {
 		owner: req.session.user.name
 	}
 
+	var gameQuery = {
+		id: req.session.user.gameID
+	}
+
 	database.read(db, "player", playerQuery, function(newestPlayerData){
 		database.read(db, "unit", unitQuery, function(newestUnitData){
+			database.read(db, "game", gameQuery, function(newestGameData){
 
-			thisPlayer = newestPlayerData.filter(function(pl){         // this is how we get from all players to our player
-                return pl.name == req.session.user.name
-            })
+				console.log("NewestGameData:");
+				console.log(newestGameData);
 
-            otherPlayers = newestPlayerData.filter(function(pl){         
-                return pl.name != req.session.user.name
-            })
 
-            console.log("thisPlayer: ");
-            console.log(thisPlayer);
+				thisPlayer = newestPlayerData.filter(function(pl){         // this is how we get from all players to our player
+	                return pl.name == req.session.user.name
+	            })
 
-			var updatedData = { 
-				playerData: thisPlayer[0].assets,
-				unitData: newestUnitData,
-				opponentData: otherPlayers
-			}
-			callback(updatedData);
+	            otherPlayers = newestPlayerData.filter(function(pl){         
+	                return pl.name != req.session.user.name
+	            })
+
+	            console.log("thisPlayer: ");
+	            console.log(thisPlayer);
+
+				var updatedData = { 
+					playerData: thisPlayer[0].assets,
+					unitData: newestUnitData,
+					opponentData: otherPlayers,
+					map: newestGameData[0].map
+				}
+				callback(updatedData);
+			})
 		})
 	})
 }
@@ -418,7 +467,9 @@ function apocalypse(db, callback){
 	database.remove(db, "player", {}, function(){
 		database.remove(db, "unit", {}, function(){
 			database.remove(db, "action", {}, function(){
-				callback();
+				database.remove(db, "game", {}, function(){
+					callback();
+				});
 			})
 		})
 	})
@@ -444,6 +495,51 @@ function techAvailable(unit, player){						// check if we have the right buildin
 	return true;				// false if we don't
 }
 
+/* create map */
+
+function createMap(db, req, callback){
+
+	if(req.session.user){				// let's make sure the player is logged in
+
+		console.log("making new map!");
+
+		newMap = [[],[],[],[],[],[],[],[],[],[]]				// 10 x 10 map
+
+		var height = 10;
+		var width = 10;
+
+		for(var i=0; i < height; i++){
+			for(var j=0; j < width; j++){
+
+				var mapType;
+				var roll = Math.random();
+
+				if(roll < 0.3){
+					mapType = "water";
+				} else {
+					mapType = "grass";
+				}
+
+
+
+				newMap[j][i] ={
+					type: mapType,
+					unit: null
+				};
+				console.log("Made tile [" + i + ", " + j + "]");
+			}
+		}
+
+		callback({status: "success", map: newMap})
+
+	} else {
+		callback({status: "fail", message: "You must be logged in"});
+	}
+};
+
+
+
+
 
 
 module.exports.createNewPlayer = createNewPlayer;
@@ -452,4 +548,6 @@ module.exports.getGameData = getGameData;
 module.exports.buyUnit = buyUnit;
 module.exports.build = build;
 module.exports.assignWorker = assignWorker;
+module.exports.createMap = createMap;
+module.exports.createNewGame = createNewGame;
 module.exports.apocalypse = apocalypse;
