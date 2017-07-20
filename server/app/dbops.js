@@ -36,8 +36,11 @@ function createNewGame(db, req, callback){
 					"assets.city.name": req.body.capital
 				}}
 
+				req.session.user.gameID = createdGame.ops[0].id;
+
 				database.update(db, "player", {name: newGame.leader}, gameUpdate, function(updatedPlayer){			// set leader gameID to the newly created game ID
 					callback({status: "success", game: createdGame})
+
 				})	
 			})
 
@@ -149,6 +152,10 @@ function createNewPlayer(db, req, callback){
 	                        lastUpdated: Date.now()
 	                    }
 	                }
+	            },
+	            location: {
+	            	x: 0,
+	            	y: 0
 	            }
             }
         }
@@ -226,8 +233,7 @@ function getGameData(db, req, callback){
 
 	var playerQuery = {
 		gameID: req.session.user.gameID
-	}				// we want this to be empty - want to get all the players	
-										// EVENTUALLY, WE'LL WANT GAME ID TO BE EQUAL					
+	}								
 
 	var unitQuery = {
 		owner: req.session.user.name
@@ -301,6 +307,7 @@ function buyUnit(db, req, callback){
 								job: "none",
 								jobMessage: "none",
 								hp: 100,
+								group: 0,
 								id: Date.now()
 							}
 
@@ -448,6 +455,44 @@ function assignWorker(db, req, callback){
 };
 
 
+function groupUnit(db, req, callback){
+
+	if(req.session.user){				// let's make sure the player is logged in
+		
+		var unitQuery = {
+			id: parseInt(req.body.id)
+		}
+
+		database.read(db, "unit", unitQuery, function getUnit(unit){
+			unit = unit[0];
+			if(unit.type == "footman" || unit.type == "archer"){
+				if(unit.hp > 0){
+
+					var unitUpdate = {
+						$set: {
+							group: parseInt(req.body.group)
+						}
+					}
+
+					database.update(db, "unit", unitQuery, unitUpdate, function sendGroup(groupedUnit){
+						console.log("Unit group is now " + groupedUnit.group)
+						callback({status: "success", message: "unit successfully grouped!"});
+					})
+
+
+				} else {
+					callback({status: "fail", message: "You can't group a dead unit"});
+				}
+			} else {
+				callback({status: "fail", message: "You can only group military units"});
+			}
+		})
+	} else {
+		callback({status: "fail", message: "You must be logged in"});
+	}
+};
+
+
 
 function createUnit(db, newUnit, callback){
 	database.create(db, "unit", newUnit, function createUnitForPlayer(createdUnit){		// this creates the new unit
@@ -507,12 +552,15 @@ function createMap(db, req, callback){
 
 		var height = 10;
 		var width = 10;
+		var roll;
 
-		for(var i=0; i < height; i++){
-			for(var j=0; j < width; j++){
 
-				var mapType;
-				var roll = Math.random();
+
+		for(var i=0; i < width; i++){
+			for(var j=0; j < height; j++){
+
+				roll = Math.random();
+
 
 				if(roll < 0.3){
 					mapType = "water";
@@ -524,6 +572,8 @@ function createMap(db, req, callback){
 
 				newMap[j][i] ={
 					type: mapType,
+					x: i,
+					y: j,
 					unit: null
 				};
 				console.log("Made tile [" + i + ", " + j + "]");
@@ -548,6 +598,7 @@ module.exports.getGameData = getGameData;
 module.exports.buyUnit = buyUnit;
 module.exports.build = build;
 module.exports.assignWorker = assignWorker;
+module.exports.groupUnit = groupUnit;
 module.exports.createMap = createMap;
 module.exports.createNewGame = createNewGame;
 module.exports.apocalypse = apocalypse;

@@ -4,14 +4,14 @@ $(document).ready(main);
 function main(){
     console.log("Game actions are up");
 
-    getUpdateInfo();
+    getUpdatedInfo();
 
     var gameLoop = setInterval(function(){
-    	getUpdateInfo();
+    	getUpdatedInfo();
     }, 5000);		// let's fetch new data every, eh, 5 seconds
 
 
-    function getUpdateInfo(){	                      /* All the info we need to update a player's screen */
+    function getUpdatedInfo(){	                      /* All the info we need to update a player's screen */
     	$.ajax({
                 type: "GET",
                 contentType: "application/json",
@@ -125,7 +125,7 @@ function main(){
 */
                     /* Alteratively: */
 
-                    getUpdateInfo();
+                    getUpdatedInfo();
                     $("#coin").css("color", "blue");
                     setTimeout(function(){                          // keep the coins blue for 5 seconds
                         $("#coin").css("color", "black");
@@ -190,6 +190,57 @@ function main(){
         })
     });
 
+    $(".group").click(function(){
+
+        $(".popup").show();
+
+        $.ajax({
+            type: "get",
+            url: "/group",
+            success: function(result){
+                $("#popup-content").empty();
+                $("#popup-content").append(result);
+            }
+        })
+    });
+
+    $("body").on("click", ".assign", function(){ 
+
+        var unitId = $(this).data("id");
+        var unitGroup = $(this).data("group");
+
+        var data = {
+            id: unitId,
+            group: unitGroup
+        }
+
+        console.log("Packaged data:");
+        console.log(data);
+
+        $.ajax({
+            type: "post",
+            url: "/group",
+            data: data,
+            success: function(result){
+               if(result.status == "success"){
+                    console.log("successfully grouped unit");
+                    getUpdatedInfo();
+                    $.ajax({
+                        type: "get",
+                        url: "/group",
+                        success: function(result){
+                            console.log("successfully fetched updated data");
+                            $("#popup-content").empty();
+                            $("#popup-content").append(result);
+                        }
+                    })
+                } else {
+                    $("#error").text(result.message);
+                }
+            }
+        })
+    });
+
 
     $("body").on("click", ".build-action", function(){ 
 
@@ -205,7 +256,7 @@ function main(){
             data: body,
             success: function(result){
                if(result.status == "success"){
-                    getUpdateInfo();
+                    getUpdatedInfo();
                     $.ajax({
                         type: "get",
                         url: "/build",
@@ -237,7 +288,7 @@ function main(){
             data: workerData,
             success: function(result){
                if(result.status == "success"){
-                    getUpdateInfo();
+                    getUpdatedInfo();
                     $.ajax({
                         type: "get",
                         url: "/assign",
@@ -303,7 +354,7 @@ function main(){
 
         map.forEach(function(row){
             row.forEach(function(tile){
-                $("#map-graphic").append("<span class = ' map-tile " + tile.type + "'>x</span>");
+                $("#map-graphic").append("<span class = ' map-tile " + tile.type + "' data-x=" + tile.x + " data-y=" + tile.y + ">x</span>");
             })
             $("#map-graphic").append("<br>");
         })

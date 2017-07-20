@@ -1,0 +1,61 @@
+<p>Group units</p>
+<% assigned0 = 0; assigned1 = 0; assigned2= 0; assigned3 = 0; %>
+
+<span class = "bold">Ungrouped Units:</span>
+<br>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == 0 && (unit.type == "footman" || unit.type == "archer")) {%>
+        <%= unit.type %>
+        <button class = "assign" data-id = <%= unit.id %> data-group = 1>1</button>
+        <button class = "assign" data-id = <%= unit.id %> data-group = 2>2</button>
+        <button class = "assign" data-id = <%= unit.id %> data-group = 3>3</button>
+        <br>
+        <% assigned0++ %>
+    <% } %>
+<% }) %>
+<% if (assigned0 == 0) { %>
+    You have no units to group. <a class = "buy-units">Buy some!</a>
+<% } %>
+<br><br>
+
+<span class = "bold">Group 1:</span>
+<br>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == 1) {%>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-group = 0>Remove</button><br>
+        <% assigned1++ %>
+    <% } %>
+<% }) %>
+<% if (assigned1 == 0) { %>
+    There are no units in group 1
+<% } %>
+<br><br>
+
+<span class = "bold">Group 2:</span>
+<br>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == 2) {%>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-group = 0>Remove</button><br>
+        <% assigned2++ %>
+    <% } %>
+<% }) %>
+<% if (assigned2 == 0) { %>
+    There are no units in group 2
+<% } %>
+
+<br><br>
+
+<span class = "bold">Group 3:</span>
+<br>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == 3) {%>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-group = 0>Remove</button><br>
+        <% assigned3++ %>
+    <% } %>
+<% }) %>
+<% if (assigned3 == 0) { %>
+    There are no units in group 3
+<% } %>
+<br>
+
+

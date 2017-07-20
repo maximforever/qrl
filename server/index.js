@@ -135,16 +135,21 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     });
 
     app.get("/game-info", function(req, res){
-
-        console.log(req.session.user)
-
-        if(req.session.user && req.session.user.gameID){                        // if this user is logged in AND has a game ID
-            gameData = dbops.getGameData(db, req, function sendGameData(gameData){
-                onload.addResources(db, req, function(){
-                    res.send(gameData);
-                }); 
-                
-            })
+        if(req.session.user){                        // if this user is logged in 
+            console.log("logged in...");
+            if(req.session.user.gameID){
+                console.log("in a game...");
+                console.log("Game ID: " + req.session.user.gameID);
+                gameData = dbops.getGameData(db, req, function sendGameData(gameData){
+                    onload.addResources(db, req, function(){
+                        res.send(gameData);
+                    });  
+                })
+            } else {
+                console.log("NOT IN A GAME!");
+                req.session.error = "You are not in a game yet.";
+                res.redirect("/new-game");
+            }
         } else {
             req.session.error = "You're not logged in";
             res.redirect("/");
@@ -178,7 +183,6 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
 
     app.get("/build", function(req, res){
-        console.log("BUILDING!")
         dbops.getGameData(db, req, function(updatedData){
             res.render("modals/build-modal", {buildings: updatedData.playerData.city.buildings});
         }) 
@@ -232,6 +236,23 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         })
     });
 
+    app.get("/group", function(req, res){
+        dbops.getGameData(db, req, function(updatedData){
+            res.render("modals/group-modal", {units: updatedData.unitData});
+        }) 
+    });
+
+    app.post("/group", function(req, res){
+        dbops.groupUnit(db, req, function(response){
+            if(response.status == "success"){
+                res.send(response)
+            } else {
+                res.send({message: response.message})
+            }
+        })
+    });
+
+
 
     /* delete everything*/
 
@@ -270,6 +291,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
     app.post("/new-game", function(req, res){
         dbops.createNewGame(db, req, function redirectToGame(game){
+            req.session.user.gameID
             res.redirect("/game");
         });
     })
