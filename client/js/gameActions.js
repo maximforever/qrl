@@ -97,6 +97,23 @@ function main(){
                     /* map */
                     drawMap(map);
 
+                    $(".group-section").empty();
+
+                   
+                    if(player.groups["1"].size > 0){
+                        $(".group-section").append("<button>Group 1</button><br>");
+                    }
+
+                    if(player.groups["2"].size > 0){
+                        $(".group-section").append("<button>Group 2</button><br>");
+                    }
+
+
+                    if(player.groups["3"].size > 0){
+                        $(".group-section").append("<button>Group 3</button><br>");
+                    }
+
+
                 }
             })
     }
@@ -208,10 +225,12 @@ function main(){
 
         var unitId = $(this).data("id");
         var unitGroup = $(this).data("group");
+        var currentGroup = $(this).data("current");
 
         var data = {
             id: unitId,
-            group: unitGroup
+            group: unitGroup,
+            current: currentGroup
         }
 
         console.log("Packaged data:");
@@ -330,23 +349,6 @@ function main(){
 
 
     /* create map */
-
-    $("body").on("click", "#new-map", function(){
-
-        $.ajax({
-            type: "get",
-            url: "/new-map",
-            success: function(mapData){
-               if(mapData.status == "success"){
-                    drawMap(mapData.map);
-                } else {
-                    $("#error").text(result.message);
-                }
-            }
-        })
-    });
-
-
 
     function drawMap(map){
 

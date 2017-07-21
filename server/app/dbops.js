@@ -65,8 +65,29 @@ function createNewPlayer(db, req, callback){
 	                military_level: 1
             	},
             	allies: [],
+            	groups:{
+            		1: {
+	            		x: 0,
+	            		y: 0,
+	            		size: 0
+	            	}, 
+	            	2: {
+	            		x: 0,
+	            		y: 0,
+	            		size: 0
+	            	},
+	            	3: {
+	            		x: 0,
+	            		y: 0,
+	            		size: 0
+	            	}
+            	},
 	            city: {
 	                name: "TBD",
+	                location: {					// we will need to place this randomly
+		            	x: 0,
+		            	y: 0
+		            },	
 	                buildings: {
 	                    barracks: {
 	                    	name: "Barracks",
@@ -152,10 +173,6 @@ function createNewPlayer(db, req, callback){
 	                        lastUpdated: Date.now()
 	                    }
 	                }
-	            },
-	            location: {
-	            	x: 0,
-	            	y: 0
 	            }
             }
         }
@@ -474,9 +491,22 @@ function groupUnit(db, req, callback){
 						}
 					}
 
+					var playerUpdate = {
+						$inc: {
+						}
+					}
+
+					if(parseInt(req.body.current) == 0){
+						playerUpdate.$inc["assets.groups." + req.body.group + ".size"] = 1;
+					} else {
+						playerUpdate.$inc["assets.groups." + req.body.current + ".size"] = -1;
+					}
+
 					database.update(db, "unit", unitQuery, unitUpdate, function sendGroup(groupedUnit){
-						console.log("Unit group is now " + groupedUnit.group)
-						callback({status: "success", message: "unit successfully grouped!"});
+						database.update(db, "player", {name: req.session.user.name}, playerUpdate , function updatePlayer(updatedPlayer){
+							console.log("Unit group is now " + groupedUnit.group)
+							callback({status: "success", message: "unit successfully grouped!"});
+						})	
 					})
 
 
@@ -574,7 +604,8 @@ function createMap(db, req, callback){
 					type: mapType,
 					x: i,
 					y: j,
-					unit: null
+					unit: null,
+					city: null
 				};
 				console.log("Made tile [" + i + ", " + j + "]");
 			}

@@ -125,11 +125,14 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     /* GAME */
 
     app.get("/game", function(req, res){
-
-        if(!req.session.user){
+        if(req.session.user){
+            if (req.session.user.gameID){                                        // need to check if this player is in a game
+                res.render("game");
+            } else {
+                res.render("intro");
+            }
+        } else {
             res.redirect("/login");
-        } else {    
-            res.render("game");
         }
 
     });
@@ -152,7 +155,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
             }
         } else {
             req.session.error = "You're not logged in";
-            res.redirect("/");
+            res.redirect("/login");
         }
     });
 
@@ -290,10 +293,15 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     /* create game */
 
     app.post("/new-game", function(req, res){
-        dbops.createNewGame(db, req, function redirectToGame(game){
-            req.session.user.gameID
-            res.redirect("/game");
-        });
+        if(req.session.user){  
+            dbops.createNewGame(db, req, function redirectToGame(game){
+                req.session.user.gameID
+                res.redirect("/game");
+            });
+        } else {
+            req.session.error = "You're not logged in";
+            res.redirect("/login");
+        }
     })
 
 

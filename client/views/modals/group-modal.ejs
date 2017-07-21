@@ -6,9 +6,9 @@
 <% units.forEach(function(unit){ %>
     <% if (unit.group == 0 && (unit.type == "footman" || unit.type == "archer")) {%>
         <%= unit.type %>
-        <button class = "assign" data-id = <%= unit.id %> data-group = 1>1</button>
-        <button class = "assign" data-id = <%= unit.id %> data-group = 2>2</button>
-        <button class = "assign" data-id = <%= unit.id %> data-group = 3>3</button>
+        <button class = "assign" data-id = <%= unit.id %> data-current = 0 data-group = 1>1</button>
+        <button class = "assign" data-id = <%= unit.id %> data-current = 0 data-group = 2>2</button>
+        <button class = "assign" data-id = <%= unit.id %> data-current = 0 data-group = 3>3</button>
         <br>
         <% assigned0++ %>
     <% } %>
@@ -22,7 +22,7 @@
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == 1) {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-group = 0>Remove</button><br>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = 1 data-group = 0>Remove</button><br>
         <% assigned1++ %>
     <% } %>
 <% }) %>
@@ -35,7 +35,7 @@
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == 2) {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-group = 0>Remove</button><br>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = 2 data-group = 0>Remove</button><br>
         <% assigned2++ %>
     <% } %>
 <% }) %>
@@ -49,7 +49,7 @@
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == 3) {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-group = 0>Remove</button><br>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = 3 data-group = 0>Remove</button><br>
         <% assigned3++ %>
     <% } %>
 <% }) %>
