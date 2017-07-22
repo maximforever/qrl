@@ -66,28 +66,21 @@ function createNewPlayer(db, req, callback){
             	},
             	allies: [],
             	groups:{
-            		1: {
-	            		x: 0,
-	            		y: 0,
+            		one: {
+            			location: "home",
 	            		size: 0
 	            	}, 
-	            	2: {
-	            		x: 0,
-	            		y: 0,
+	            	two: {
+	            		location: "home",
 	            		size: 0
 	            	},
-	            	3: {
-	            		x: 0,
-	            		y: 0,
+	            	three: {
+	            		location: "home",
 	            		size: 0
 	            	}
             	},
 	            city: {
 	                name: "TBD",
-	                location: {					// we will need to place this randomly
-		            	x: 0,
-		            	y: 0
-		            },	
 	                buildings: {
 	                    barracks: {
 	                    	name: "Barracks",
@@ -324,7 +317,7 @@ function buyUnit(db, req, callback){
 								job: "none",
 								jobMessage: "none",
 								hp: 100,
-								group: 0,
+								group: "none",
 								id: Date.now()
 							}
 
@@ -487,7 +480,7 @@ function groupUnit(db, req, callback){
 
 					var unitUpdate = {
 						$set: {
-							group: parseInt(req.body.group)
+							group: req.body.group
 						}
 					}
 
@@ -496,7 +489,7 @@ function groupUnit(db, req, callback){
 						}
 					}
 
-					if(parseInt(req.body.current) == 0){
+					if(req.body.current == "none"){
 						playerUpdate.$inc["assets.groups." + req.body.group + ".size"] = 1;
 					} else {
 						playerUpdate.$inc["assets.groups." + req.body.current + ".size"] = -1;

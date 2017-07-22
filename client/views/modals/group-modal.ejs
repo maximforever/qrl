@@ -4,11 +4,11 @@
 <span class = "bold">Ungrouped Units:</span>
 <br>
 <% units.forEach(function(unit){ %>
-    <% if (unit.group == 0 && (unit.type == "footman" || unit.type == "archer")) {%>
+    <% if (unit.group == "none" && (unit.type == "footman" || unit.type == "archer")) {%>
         <%= unit.type %>
-        <button class = "assign" data-id = <%= unit.id %> data-current = 0 data-group = 1>1</button>
-        <button class = "assign" data-id = <%= unit.id %> data-current = 0 data-group = 2>2</button>
-        <button class = "assign" data-id = <%= unit.id %> data-current = 0 data-group = 3>3</button>
+        <button class = "assign" data-id = <%= unit.id %> data-current = "none" data-group = "one">1</button>
+        <button class = "assign" data-id = <%= unit.id %> data-current = "none" data-group = "two">2</button>
+        <button class = "assign" data-id = <%= unit.id %> data-current = "none" data-group = "three">3</button>
         <br>
         <% assigned0++ %>
     <% } %>
@@ -21,8 +21,8 @@
 <span class = "bold">Group 1:</span>
 <br>
 <% units.forEach(function(unit){ %>
-    <% if (unit.group == 1) {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = 1 data-group = 0>Remove</button><br>
+    <% if (unit.group == "one") {%>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = "one" data-group = "none">Remove</button><br>
         <% assigned1++ %>
     <% } %>
 <% }) %>
@@ -34,8 +34,8 @@
 <span class = "bold">Group 2:</span>
 <br>
 <% units.forEach(function(unit){ %>
-    <% if (unit.group == 2) {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = 2 data-group = 0>Remove</button><br>
+    <% if (unit.group == "two") {%>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = "two" data-group = "none">Remove</button><br>
         <% assigned2++ %>
     <% } %>
 <% }) %>
@@ -48,8 +48,8 @@
 <span class = "bold">Group 3:</span>
 <br>
 <% units.forEach(function(unit){ %>
-    <% if (unit.group == 3) {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = 3 data-group = 0>Remove</button><br>
+    <% if (unit.group == "three") {%>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = "three" data-group = "none">Remove</button><br>
         <% assigned3++ %>
     <% } %>
 <% }) %>
