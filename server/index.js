@@ -255,6 +255,21 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         })
     });
 
+    app.get("/actions", function(req, res){
+        dbops.getGameData(db, req, function(updatedData){
+            console.log("name:");
+            console.log(req.query.name);
+            enemy = updatedData.opponentData.filter(function(opponent){
+                return opponent.name == req.query.name
+            })
+
+            res.render("modals/actions-modal", {opponent: enemy[0], units: updatedData.unitData});
+        }) 
+    });
+
+
+
+
 
 
     /* delete everything*/

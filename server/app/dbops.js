@@ -295,11 +295,11 @@ function buyUnit(db, req, callback){
 
 		database.read(db, "player", playerQuery, function(thisPlayer){
 			console.log("Player has " + thisPlayer[0].assets.resources.coin.count + " coin");
-			console.log(req.body.unit + " costs " + unitCost[req.body.unit]);
+			console.log(req.body.unit + " costs " + unitCost[req.body.unit]);								
 
-			if(techAvailable(req.body.unit, thisPlayer[0])){
+			if(techAvailable(req.body.unit, thisPlayer[0])){										// let's make sure the tech is available
 
-				if(thisPlayer[0].assets.resources.coin.count >= unitCost[req.body.unit]){
+				if(thisPlayer[0].assets.resources.coin.count >= unitCost[req.body.unit]){			// let's make sure the player has enough money
 
 					var unitQuery = {
 						owner: thisPlayer[0].name,
@@ -308,7 +308,7 @@ function buyUnit(db, req, callback){
 
 					database.read(db, "unit", unitQuery, function(existingWorkers){
 
-						if(existingWorkers.length < 8 || req.body.unit !== "worker"){
+						if(existingWorkers.length < 8 || req.body.unit !== "worker"){				// let's make sure the player has less than 8 workers
 							console.log("got enough coin to buy a " + req.body.unit)
 							var newUnit = {
 								type: req.body.unit,
@@ -319,6 +319,7 @@ function buyUnit(db, req, callback){
 								hp: 100,
 								group: "none",
 								id: Date.now()
+								
 							}
 
 							var count = "resources.coin.count";

@@ -1,0 +1,50 @@
+<% assigned0 = 0; assigned1 = 0; assigned2= 0; assigned3 = 0; %>
+
+<span class = "bold"><%= opponent.name %>:</span>
+<br>
+Game ID: <%= opponent.gameID %>
+
+<br>
+<br>
+
+<span class = "bold">Group 1:</span>
+<br>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == "one") {%>
+        | <%= unit.type %> 
+        <% assigned1++ %>
+    <% } %>
+<% }) %>
+<% if (assigned1 == 0) { %>
+    There are no units in group 1
+<% } %>
+<br><br>
+
+<span class = "bold">Group 2:</span>
+<br>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == "two") {%>
+        | <%= unit.type %>
+        <% assigned2++ %>
+    <% } %>
+<% }) %>
+<% if (assigned2 == 0) { %>
+    There are no units in group 2
+<% } %>
+
+<br><br>
+
+<span class = "bold">Group 3:</span>
+<br>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == "three") {%>
+        | <%= unit.type %>
+        <% assigned3++ %>
+    <% } %>
+<% }) %>
+<% if (assigned3 == 0) { %>
+    There are no units in group 3
+<% } %>
+<br>
+
+

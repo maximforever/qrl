@@ -47,7 +47,6 @@ function main(){
                     Object.keys(player.city.buildings).forEach(function(bldg){          // this is a way to cycle through JSON
                         building = player.city.buildings[bldg];                         // this returns each individual object name (ex: "granary")
                         if(building.built){                                       // player.city.buildings[bldg] gives us the actual object
-                            console.log("got a " + building.type);
                             $("#" + building.type).show();
                             $("#" + building.type).find(".name").text(building.name);
                             $("#" + building.type).find(".level").text(building.level);
@@ -86,7 +85,7 @@ function main(){
                     if(opponents.length > 0 ){
                         opponents.forEach(function(enemy){           //
                             $(".opponents").append("<span id=" + enemy.name + ">"+enemy.name + "</span>");
-                            $("#" + enemy.name).append("<button class = 'enemy-actions' data-opponent = '" + enemy.name + "'>Actions</button><br>");              
+                            $("#" + enemy.name).append("<button class = 'actions' data-opponent = '" + enemy.name + "'>Actions</button><br>");              
                         });
                     } else {
                         $(".opponents").append("<p>You don't have anyone to play with :*( Get some friends!</p>")
@@ -100,16 +99,16 @@ function main(){
                     $(".group-section").empty();
 
                    
-                    if(player.groups["1"].size > 0){
+                    if(player.groups["one"].size > 0){
                         $(".group-section").append("<button>Group 1</button><br>");
                     }
 
-                    if(player.groups["2"].size > 0){
+                    if(player.groups["two"].size > 0){
                         $(".group-section").append("<button>Group 2</button><br>");
                     }
 
 
-                    if(player.groups["3"].size > 0){
+                    if(player.groups["three"].size > 0){
                         $(".group-section").append("<button>Group 3</button><br>");
                     }
 
@@ -324,7 +323,8 @@ function main(){
     });
 
 
-    $("body").on("click", ".enemy-actions", function(){
+    $("body").on("click", ".actions", function(){
+
 
         enemyName = $(this).data("opponent");
 
@@ -334,18 +334,16 @@ function main(){
 
         $.ajax({
             type: "get",
-            url: "/enemy-action",
+            url: "/actions",
             data: enemyData,
             success: function(result){
-               if(result.status == "success"){
-                    $("#popup-content").empty();
-                    $("#popup-content").append(result);
-                } else {
-                    $("#error").text(result.message);
-                }
+                $(".popup").show();
+                $("#popup-content").empty();
+                $("#popup-content").append(result);
             }
         })
     });
+
 
 
     /* create map */
@@ -364,9 +362,14 @@ function main(){
 
 
 
+    $(document).keyup(function(e) {                             // close on ESC
+      if (e.keyCode === 27) $('#close').click();
+    });
 
 
-    $("#close").click(function(){                           /* closes the popup*/
+
+
+    $("#close").click(function(){                               // close the popup
         $(".popup").css("display", "none    ");
     })
    

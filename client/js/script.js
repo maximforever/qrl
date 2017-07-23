@@ -18,6 +18,10 @@ function main(){
     }*/
 
 
+
+
+
+
 /* ASYNC EXPERIMENTS */
 
     $("#async").on("click", function(){
