@@ -7,7 +7,7 @@ Game ID: <%= opponent.gameID %>
 <br>
 <br>
 
-<span class = "bold">Group 1:</span>
+<span class = "bold">Group 1: <%= player.groups.one.status %></span>
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "one") {%>
@@ -17,24 +17,34 @@ Game ID: <%= opponent.gameID %>
 <% }) %>
 <% if (assigned1 == 0) { %>
     There are no units in group 1
+<% } else if (player.groups.one.status == "free") { %>
+    <button class = "attack-player" data-group="one" data-opponent=<%= opponent.name %>>Send to Attack</button>
 <% } %>
+
+
+
 <br><br>
 
-<span class = "bold">Group 2:</span>
+<span class = "bold">Group 2: <%= player.groups.two.status %></span>
 <br>
+
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "two") {%>
         | <%= unit.type %>
         <% assigned2++ %>
     <% } %>
 <% }) %>
+
 <% if (assigned2 == 0) { %>
     There are no units in group 2
+<% } else if (player.groups.two.status == "free") { %>
+    <button class = "attack-player" data-group="two" data-opponent=<%= opponent.name %>>Send to Attack</button>
 <% } %>
+
 
 <br><br>
 
-<span class = "bold">Group 3:</span>
+<span class = "bold">Group 3: <%= player.groups.three.status %></span>
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "three") {%>
@@ -44,7 +54,11 @@ Game ID: <%= opponent.gameID %>
 <% }) %>
 <% if (assigned3 == 0) { %>
     There are no units in group 3
+<% } else if (player.groups.three.status == "free") { %>
+    <button class = "attack-player" data-group="three" data-opponent=<%= opponent.name %>>Send to Attack</button>
 <% } %>
+
+
 <br>
 
 

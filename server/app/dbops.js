@@ -14,6 +14,34 @@ var unitCost = {
 	"archer": 200
 }
 
+var speed = {
+	"footman": 3,
+	"archer": 8
+}
+
+
+var armor = {
+	"footman": 3,
+	"archer": 1
+}
+
+
+var str = {
+	"footman": 5,
+	"archer": 5
+}
+
+
+function soldier(str, armor, speed){
+	this.str = str; 
+	this.armor = armor;
+	this.speed = speed;
+}
+
+
+
+
+
 
 function createNewGame(db, req, callback){
 
@@ -68,14 +96,17 @@ function createNewPlayer(db, req, callback){
             	groups:{
             		one: {
             			location: "home",
+            			status: "free",
 	            		size: 0
 	            	}, 
 	            	two: {
 	            		location: "home",
+	            		status: "free",
 	            		size: 0
 	            	},
 	            	three: {
 	            		location: "home",
+	            		status: "free",
 	            		size: 0
 	            	}
             	},
@@ -310,17 +341,33 @@ function buyUnit(db, req, callback){
 
 						if(existingWorkers.length < 8 || req.body.unit !== "worker"){				// let's make sure the player has less than 8 workers
 							console.log("got enough coin to buy a " + req.body.unit)
+							var fightingStats;							// placeholder in case this is a military unit 
 							var newUnit = {
+								id: Date.now(),
 								type: req.body.unit,
 								lastUpdated: Date.now(),
 								owner: thisPlayer[0].name,
 								job: "none",
-								jobMessage: "none",
 								hp: 100,
-								group: "none",
-								id: Date.now()
-								
+								group: "none"
 							}
+
+							/*
+								Above, I've created small objects that hold base values for each type of unit, 
+								as well as a general soldier constructor
+							*/
+
+
+							if(req.body.unit == "archer" || req.body.unit == "footman"){
+								fightingStats = new soldier(str[req.body.unit], armor[req.body.unit], speed[req.body.unit]); 				
+								newUnit.stats = fightingStats;																				 
+							}
+							console.log("--------");
+							console.log("here's what the new unit looks like:");
+							console.log(newUnit);
+							console.log("--------");
+
+
 
 							var count = "resources.coin.count";
 
@@ -532,6 +579,72 @@ function createUnit(db, newUnit, callback){
 }
 
 
+function attackPlayer(db, req, callback){
+
+	/*
+		1. check that the user is logged in
+		2. check that the opponent is alive
+		3. create action and add it to the action queue
+	*/
+
+	if(req.session.user){				// let's make sure the player is logged in
+		
+		var opponentQuery = {
+ 			name: req.body.name
+		}
+
+		database.read(db, "player", opponentQuery, function attackOpponent(opponent){			// get opponent data
+			if(opponent[0].assets.city.buildings.citadel.hp > 0){
+
+				var unitQuery = {										// these are all the units in the group we're attacking with
+					owner: req.session.user.name,
+					group: req.body.group
+				}
+
+				database.read(db, "unit", unitQuery, function collectUnits(groupUnits){
+
+					console.log("here are the units in this group:");
+					console.log(groupUnits);
+
+
+					var attack = {
+						from: req.session.user.name,
+						to: opponent[0].name,
+						type: "attack",
+						units: groupUnits
+					}
+
+					var playerUpdate = {
+						$set: {
+						}
+					}
+
+					playerUpdate.$set["assets.groups." + req.body.group + ".status"] = "attacking";
+
+					database.create(db, "action", attack, function addAttack(attack){
+						database.update(db, "player", {name: req.session.user.name}, playerUpdate, function confirm(group){
+
+							callback({status: "success"});
+
+						})
+
+					});
+				})
+			} else {
+				callback({status: "fail", message: "This opponent has been defeated"});
+			}
+		})
+	} else {
+		callback({status: "fail", message: "You must be logged in"});
+	}
+
+
+
+}
+
+
+/* misc functions */
+
 function apocalypse(db, callback){
 	database.remove(db, "player", {}, function(){
 		database.remove(db, "unit", {}, function(){
@@ -624,6 +737,7 @@ module.exports.buyUnit = buyUnit;
 module.exports.build = build;
 module.exports.assignWorker = assignWorker;
 module.exports.groupUnit = groupUnit;
+module.exports.attackPlayer = attackPlayer;
 module.exports.createMap = createMap;
 module.exports.createNewGame = createNewGame;
 module.exports.apocalypse = apocalypse;

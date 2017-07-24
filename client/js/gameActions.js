@@ -8,7 +8,7 @@ function main(){
 
     var gameLoop = setInterval(function(){
     	getUpdatedInfo();
-    }, 5000);		// let's fetch new data every, eh, 5 seconds
+    }, 10000);		// let's fetch new data every, eh, 10 seconds
 
 
     function getUpdatedInfo(){	                      /* All the info we need to update a player's screen */
@@ -96,7 +96,7 @@ function main(){
                     /* map */
                     drawMap(map);
 
-                    $(".group-section").empty();
+                   /* $(".group-section").empty();
 
                    
                     if(player.groups["one"].size > 0){
@@ -111,7 +111,7 @@ function main(){
                     if(player.groups["three"].size > 0){
                         $(".group-section").append("<button>Group 3</button><br>");
                     }
-
+*/
 
                 }
             })
@@ -326,7 +326,7 @@ function main(){
     $("body").on("click", ".actions", function(){
 
 
-        enemyName = $(this).data("opponent");
+        var enemyName = $(this).data("opponent");
 
         var enemyData = {
             name: enemyName,
@@ -342,6 +342,47 @@ function main(){
                 $("#popup-content").append(result);
             }
         })
+    });
+
+
+    /* attack opponent*/
+
+
+    $("body").on("click", ".attack-player", function(){
+
+        console.log("clicked!");
+
+        var thisEnemy = $(this).data("opponent");
+        var thisGroup = $(this).data("group");
+
+        var attackData = {
+            name: thisEnemy,
+            group: thisGroup
+        }
+
+        var enemyData = {
+            name: thisEnemy,
+        }
+
+        $.ajax({
+            type: "post",
+            url: "/attack-player",
+            data: attackData,
+            success: function(result){
+                getUpdatedInfo();
+                $.ajax({
+                    type: "get",
+                    url: "/actions",
+                    data: enemyData,
+                    success: function(result){
+                        $(".popup").show();
+                        $("#popup-content").empty();
+                        $("#popup-content").append(result);
+                    }
+                })
+            }
+        })
+
     });
 
 

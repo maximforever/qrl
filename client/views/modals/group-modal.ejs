@@ -49,7 +49,7 @@
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "three") {%>
-        <%= unit.type %><button class = "assigna" data-id = <%= unit.id %> data-current = "three" data-group = "none">Remove</button><br>
+        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = "three" data-group = "none">Remove</button><br>
         <% assigned3++ %>
     <% } %>
 <% }) %>

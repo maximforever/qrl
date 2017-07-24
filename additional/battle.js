@@ -13,15 +13,17 @@ function Unit(id, type, player, str, armor, speed, hp){
 var p1 = [];
 var p2 = []
 
-seven = new Unit(7, "footman", 1, 5, 3, 3, 10);
-eight = new Unit(8, "footman", 1, 5, 3, 3, 10);
+
 one = new Unit(1, "footman", 1, 5, 3, 3, 10);
 two = new Unit(2, "footman", 1, 5, 3, 3, 10);
-three = new Unit(3, "archer", 1, 5, 1, 8, 10);
+three = new Unit(3, "footman", 1, 5, 3, 3, 10);
 
-four = new Unit(4, "archer", 2, 5, 1, 8, 10);
-five = new Unit(5, "archer", 2, 5, 1, 8, 10);
-six = new Unit(6, "archer", 2, 5, 1, 8, 10);
+four = new Unit(4, "footman", 1, 5, 3, 3, 10);
+five = new Unit(5, "footman", 1, 5, 3, 3, 10);
+six = new Unit(6, "archer", 1, 5, 1, 8, 10);
+
+seven = new Unit(7, "archer", 2, 5, 1, 8, 10);
+eight = new Unit(8, "archer", 2, 5, 1, 8, 10);
 
 var allUnits = [one, two, three, four, five, six, seven, eight];
 var all = [];
@@ -139,7 +141,7 @@ function battle(all, p1, p2){
 
 
 
-var runs = 1;
+var runs = 100000;
 
 for(var i = 0; i < runs; i++){
 
