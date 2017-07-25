@@ -28,7 +28,11 @@
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "one") {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = "one" data-group = "none">Remove</button><br>
+        <%= unit.type %>
+        <%  if (player.groups.one.status == "free") {  %>
+            <button class = "assign" data-id = <%= unit.id %> data-current = "one" data-group = "none">Remove</button>
+        <% } %>
+        <br>
         <% assigned1++ %>
     <% } %>
 <% }) %>
@@ -41,7 +45,11 @@
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "two") {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = "two" data-group = "none">Remove</button><br>
+        <%= unit.type %>
+        <%  if (player.groups.two.status == "free") {  %>
+            <button class = "assign" data-id = <%= unit.id %> data-current = "two" data-group = "none">Remove</button>
+        <% } %>
+        <br>
         <% assigned2++ %>
     <% } %>
 <% }) %>
@@ -55,7 +63,11 @@
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "three") {%>
-        <%= unit.type %><button class = "assign" data-id = <%= unit.id %> data-current = "three" data-group = "none">Remove</button><br>
+        <%= unit.type %>
+        <% if (player.groups.three.status == "free") { %>
+            <button class = "assign" data-id = <%= unit.id %> data-current = "three" data-group = "none">Remove</button>
+        <% } %>
+        <br>
         <% assigned3++ %>
     <% } %>
 <% }) %>

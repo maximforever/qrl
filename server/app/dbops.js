@@ -520,44 +520,58 @@ function groupUnit(db, req, callback){
 		var unitQuery = {
 			id: parseInt(req.body.id)
 		}
+		database.read(db, "player", {name: req.session.user.name}, function(player){
+			database.read(db, "unit", unitQuery, function getUnit(unit){
+				unit = unit[0];
+				if(unit.type == "footman" || unit.type == "archer"){
+					if(unit.hp > 0){
 
-		database.read(db, "unit", unitQuery, function getUnit(unit){
-			unit = unit[0];
-			if(unit.type == "footman" || unit.type == "archer"){
-				if(unit.hp > 0){
-
-					var unitUpdate = {
-						$set: {
-							group: req.body.group
+						var unitUpdate = {
+							$set: {
+								group: req.body.group
+							}
 						}
-					}
 
-					var playerUpdate = {
-						$inc: {
+						var playerUpdate = {
+							$inc: {
+							}
 						}
-					}
+						console.log("HERE!");
+						console.log("group: " + req.body.group);
+						console.log(player[0].assets.groups);
 
-					if(req.body.current == "none"){
-						playerUpdate.$inc["assets.groups." + req.body.group + ".size"] = 1;
+							if(req.body.current == "none"){
+								playerUpdate.$inc["assets.groups." + req.body.group + ".size"] = 1;
+							} else {
+								playerUpdate.$inc["assets.groups." + req.body.current + ".size"] = -1;
+							}
+
+						/*
+							This is a mouthful. There are two cases where this should work:
+								1. we're moving an unassigned unit into a group that's free
+								2. we're moving an assigned unit from a group that's free
+						*/
+
+						if((req.body.current == "none" && player[0].assets.groups[req.body.group].status == "free") || (req.body.current != "none" && player[0].assets.groups[req.body.current].status == "free")) {
+							database.update(db, "unit", unitQuery, unitUpdate, function sendGroup(groupedUnit){
+								database.update(db, "player", {name: req.session.user.name}, playerUpdate , function updatePlayer(updatedPlayer){
+									console.log("Unit group is now " + groupedUnit.group)
+									callback({status: "success", message: "unit successfully grouped!"});
+								})	
+							})
+						} else {
+							callback({status: "fail", message: "This Group is occupied"});
+						}
+
 					} else {
-						playerUpdate.$inc["assets.groups." + req.body.current + ".size"] = -1;
+						callback({status: "fail", message: "You can't group a dead unit"});
 					}
-
-					database.update(db, "unit", unitQuery, unitUpdate, function sendGroup(groupedUnit){
-						database.update(db, "player", {name: req.session.user.name}, playerUpdate , function updatePlayer(updatedPlayer){
-							console.log("Unit group is now " + groupedUnit.group)
-							callback({status: "success", message: "unit successfully grouped!"});
-						})	
-					})
-
-
 				} else {
-					callback({status: "fail", message: "You can't group a dead unit"});
+					callback({status: "fail", message: "You can only group military units"});
 				}
-			} else {
-				callback({status: "fail", message: "You can only group military units"});
-			}
+			})		
 		})
+		
 	} else {
 		callback({status: "fail", message: "You must be logged in"});
 	}
