@@ -340,63 +340,6 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
 
 
-/* ASYNC TEST, IGNORE */
-
-
-var trigger = false;
-
-app.get("/async", function (req, res){
-    res.render("async");
-});
-
-
-app.post("/async", function (req, res){
-
-    hold(respond);
-
-    function respond(){
-        res.send("hello world!");
-    }
-    
-});
-
-
-function hold(callback){
-
-    a();
-
-    function a(){
-         setTimeout(function(){
-            if(trigger){
-                callback();
-            } else {
-                console.log("waiting for trigger to repond");
-                a();
-            }
-            
-        }, 100);
-    }
-}
-
-app.post("/trigger", function (req, res){
-   trigger = true;
-   //console.log("trigger is: " + trigger);
-   res.send("success!");
-});
-
-
-app.post("/false", function (req, res){
-   trigger = false;
-   res.send("success!");
-});
-
-
-
-
-/* END TEST */
-
-
-
     /* 404 */
 
     app.use(function(req, res) {
