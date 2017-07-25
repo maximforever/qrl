@@ -6,9 +6,15 @@
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "none" && (unit.type == "footman" || unit.type == "archer")) {%>
         <%= unit.type %>
-        <button class = "assign small-button" data-id = <%= unit.id %> data-current = "none" data-group = "one">1</button>
-        <button class = "assign small-button" data-id = <%= unit.id %> data-current = "none" data-group = "two">2</button>
+        <% if(player.groups.one.status == "free"){ %>
+            <button class = "assign small-button" data-id = <%= unit.id %> data-current = "none" data-group = "one">1</button>
+        <% } %>
+        <% if(player.groups.two.status == "free"){ %>
+            <button class = "assign small-button" data-id = <%= unit.id %> data-current = "none" data-group = "two">2</button>
+        <% } %>
+        <% if(player.groups.three.status == "free"){ %>
         <button class = "assign small-button" data-id = <%= unit.id %> data-current = "none" data-group = "three">3</button>
+        <% } %>
         <br>
         <% assigned0++ %>
     <% } %>
@@ -18,7 +24,7 @@
 <% } %>
 <br><br>
 
-<span class = "bold">Group 1:</span>
+<span class = "bold">Group 1: <%= player.groups.one.status %></span>
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "one") {%>
@@ -31,7 +37,7 @@
 <% } %>
 <br><br>
 
-<span class = "bold">Group 2:</span>
+<span class = "bold">Group 2: <%= player.groups.two.status %></span>
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "two") {%>
@@ -45,7 +51,7 @@
 
 <br><br>
 
-<span class = "bold">Group 3:</span>
+<span class = "bold">Group 3: <%= player.groups.three.status %></span>
 <br>
 <% units.forEach(function(unit){ %>
     <% if (unit.group == "three") {%>
