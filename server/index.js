@@ -21,6 +21,7 @@ app.use(express.static('client'));         // sets the correct views for the CSS
 
 
 const dbops = require("./app/dbops");
+const database = require("./app/database");
 const onload = require("./app/onload");
 
 
@@ -106,7 +107,9 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
                 if (req.session.user.gameID){                                        // need to check if this player is in a game
                     res.redirect("game");
                 } else {
-                    res.render("intro");
+                    dbops.getInvites(db, req, function invitePlayer(invitations){
+                        res.render("intro", {invites: invitations});
+                    });    
                 }
 
             } else {
@@ -126,11 +129,34 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
     app.get("/game", function(req, res){
         if(req.session.user){
-            if (req.session.user.gameID){                                        // need to check if this player is in a game
-                res.render("game");
-            } else {
-                res.render("intro");
-            }
+            console.log("-- logged in");
+            database.read(db, "player", {name: req.session.user.name}, function checkPlayer(player){
+                if (player[0].gameID != "null" && player[0].gameID != null){   
+                    console.log("--in a game");                                     // need to check if this player is in a game
+                    dbops.directToGame(db, req, function determineGameStatus(response){
+                        console.log("got the status: " + response.status);
+                        if(response.status == "started"){
+                            res.render("game");
+                        } else if(response.status == "capital"){
+                            res.render("capital");
+                        } else if(response.status == "invite"){
+                            res.render("invite");
+                        } else if (response.status == "waiting"){
+                            dbops.getInvites(db, req, function invitePlayer(invitations){
+                                /* NEED TO GET PLAYERS IN THIS GAME, NOT INVITES*/
+                                res.render("waiting", {invites: invitations});
+                            });
+                        } else {
+                            res.render("index", {error: "Something went wrong"});
+                        }
+
+                    })
+                } else {
+                    dbops.getInvites(db, req, function invitePlayer(invitations){
+                        res.render("intro", {invites: invitations});
+                    });
+                }
+            });
         } else {
             res.redirect("/login");
         }
@@ -143,7 +169,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
             if(req.session.user.gameID){
                 console.log("in a game...");
                 console.log("Game ID: " + req.session.user.gameID);
-                gameData = dbops.getGameData(db, req, function sendGameData(gameData){
+                dbops.getGameData(db, req, function sendGameData(gameData){
                     onload.addResources(db, req, function(){
                         res.send(gameData);
                     });  
@@ -288,7 +314,7 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         dbops.apocalypse(db, function restart(){
             req.session.user = null;
             req.session.expires = new Date(Date.now);       /* not sure if this is needed */
-            req.session.message = "Evetything's gone";
+            req.session.message = "Everything's gone";
             res.redirect("/signup");
         });
     })
@@ -314,8 +340,35 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
 
     app.post("/invite", function(req, res){
-        dbops.invite(db, req, function redirectToGame(game){
+        dbops.invite(db, req, function redirectToGame(response){
+            if(response.status == "success"){
+                res.render("invite", {message: response.message})
+            } else {
+                res.render("invite", {error: response.message})
+            }
+        });
+    })
+
+    app.post("/joingame", function(req, res){
+        dbops.joinGame(db, req, function redirectToGame(response){
             res.redirect("/game");
+        });
+    })
+
+    app.post("/name-city", function(req, res){
+        dbops.nameCity(db, req, function redirectToGame(response){
+            res.redirect("/game");
+        });
+    })
+
+    app.post("/startgame", function(req, res){
+        dbops.startGame(db, req, function redirectToGame(response){
+            console.log("response.status: " + response.status)
+            if(response.status == "success"){
+                res.redirect("/game")
+            } else {
+                res.render("invite", {error: response.message});
+            }
         });
     })
 

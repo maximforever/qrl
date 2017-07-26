@@ -185,7 +185,7 @@ function main(){
         })
     });
 
-    $(".group").click(function(){
+    $("body").on("click", ".group", function(){
 
         $(".popup").show();
 
@@ -364,7 +364,25 @@ function main(){
 
     });
 
+    /* accept invite */
 
+    $("body").on("click", ".accept-invite", function(){
+        
+        gameData = {
+            id: $(this).attr("id")
+        } 
+
+        $.ajax({
+            type: "post",
+            url: "/joingame",
+            data: gameData,
+            success: function(result){
+                console.log("accepted invite");
+                $("#" + gameData.id).remove();
+                window.location.href = "/game";
+            }
+        })
+    });
 
     $(document).keyup(function(e) {                             // close on ESC
       if (e.keyCode === 27) $('#close').click();

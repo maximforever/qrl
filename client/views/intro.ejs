@@ -4,13 +4,24 @@
 
 
 <form action = "/new-game" method = "post">
-    <p>Capital Name:</p>
-    <input type="text" name="capital" id="captal-name" autofocus></input>
+    <input type="text" name="capital" id="captal-name" placeholder="capital name" autofocus></input>
     <br>
     <br>
 
     <input type = "submit" id = "new-player-submit" value= "Create new game"></input>
 </form>
+
+<hr>
+
+<div class = "#invitations">
+<% invites.forEach(function(invite){ %>
+    
+    <p><%= invite.from %> has invited you to join a game <button class = "accept-invite" id = <%= invite.gameID %>>Accept</button></p>
+
+
+<% }) %>
+
+</div>
 
 
 <% include partials/_footer.ejs %>

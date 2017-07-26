@@ -1,5 +1,5 @@
 const database = require("./database");
-
+const CYCLE = 1000*60*60*12 				// 1 cycle = 12 hours
 
 
 
@@ -107,7 +107,7 @@ function createNewPlayer(db, req, callback){
 	            	}
             	},
 	            city: {
-	                name: "TBD",
+	                name: null,
 	                buildings: {
 	                    barracks: {
 	                    	name: "Barracks",
@@ -629,7 +629,9 @@ function attackPlayer(db, req, callback){
 						from: req.session.user.name,
 						to: opponent[0].name,
 						type: "attack",
-						units: groupUnits
+						units: groupUnits,
+						declared: Date.now(),
+						expires: (Date.now() + CYCLE)
 					}
 
 					var playerUpdate = {
@@ -661,7 +663,202 @@ function attackPlayer(db, req, callback){
 }
 
 
-/* misc functions */
+/* invite/game functions */
+
+function invite(db, req, callback){
+
+	/*
+		1. check if the player being invited exists
+		2. if exists, create a new entry in the invite db with to, from
+	*/
+
+
+	var playerQuery = {
+		name: (req.body.name).toLowerCase()
+	}
+	if(req.session.user.name != req.body.name){
+		database.read(db, "player", playerQuery, function checkIfReal(opponent){
+
+			if(opponent.length == 1){
+				console.log("GAME ID: " + opponent[0].gameID);
+
+				if(opponent[0].gameID == "null" || opponent[0].gameID == null){
+
+					var existingInvite = {
+						type: 'invite',
+						from: req.session.user.name,
+						to: req.body.name
+					}
+
+					database.read(db, "action", existingInvite, function checkIfInvited(existingInvites){
+
+						if(existingInvites.length == 0){
+							
+							var newInvite = {
+								from: req.session.user.name,
+								to: opponent[0].name,
+								type: "invite",
+								gameID: req.session.user.gameID
+							}
+
+							database.create(db, "action", newInvite, function confirmInvite(invite){
+								console.log("HERE IS THE INVITE:");
+								console.log(invite.ops[0]);
+								// again, no idea why ops all of a sudden
+								callback({status: "success", message: ("player '" + invite.ops[0].to +  "' has been invited")})
+							});
+							
+						} else {
+							callback({status: "fail", message: ("You have already invited '" + (req.body.name).toLowerCase() + "'")})
+						}
+
+						
+					})
+
+				} else {
+					callback({status: "fail", message: ("player '" + (req.body.name).toLowerCase() +  "' is already in a game")});
+				}
+
+			} else {
+				callback({status: "fail", message: ("player '" + (req.body.name).toLowerCase() +  "' doesn't exists")});
+			}
+
+		})
+	} else{
+		callback({status: "fail", message: ("You can't play with yourself... here")})
+	}
+}
+
+function getInvites(db, req, callback){
+
+	var inviteQuery = {
+		type: "invite",
+		to: req.session.user.name
+	}
+
+	database.read(db, "action", inviteQuery, function returnInvites(invites){
+		console.log("Got " + invites.length + " invites for player " + req.session.user.name);
+		callback(invites);
+	})
+}
+
+function directToGame(db, req, callback){
+
+	database.read(db, "player", {name: req.session.user.name}, function getPlayer(player){
+		var gameQuery = {
+			id: player[0].gameID
+		}
+
+		database.read(db, "game", gameQuery, function getGame(game){
+			if(game[0].status == "started"){
+				callback({status: "started"});
+			} else {
+				if(req.session.user.name == game[0].leader){
+					callback({status: "invite"});
+				} else {
+					if (player[0].assets.city.name == "null" || player[0].assets.city.name == null){
+						callback({status: "capital"});
+					} else {
+						callback({status: "waiting"});
+					}
+				}
+			}
+		})
+	})
+
+	
+
+}
+
+function joinGame(db, req, callback){
+
+	var playerQuery = {name: req.session.user.name}
+	var gameQuery = {id: parseInt(req.body.id)}
+
+	var gameUpdate = {
+		$push: {
+			players: req.session.user.name
+		}
+	}
+
+	var playerUpdate = {
+		$set: {
+			gameID: parseInt(req.body.id)
+		}
+	}
+
+	var inviteQuery = {
+		type: "invite",
+		to: req.session.user.name,
+		gameID: parseInt(req.body.id)
+
+	}
+
+	database.update(db, "player", playerQuery, playerUpdate, function updateGame(player){
+		database.read(db, "game", gameQuery, function checkIfAlreadyInGame(game){			// check that this player isn't already in the game
+			if(game[0].players.indexOf(req.session.user.name) == -1){
+				database.update(db, "game", gameQuery, gameUpdate, function deleteInvite(updatedGame){
+					database.remove(db, "action", inviteQuery, function confirmUpdate(response){
+						callback({status: "success"});
+					})
+				});
+			} else {
+				callback({status: "fail", message: "This player is already in this game"});
+			}
+			
+		})
+		
+	});
+}
+
+function nameCity(db, req, callback){
+
+	var playerQuery = {name: req.session.user.name}
+	var playerUpdate = {
+		$set: {
+			"assets.city.name": req.body.name
+		}
+	}
+
+	database.update(db, "player", playerQuery, playerUpdate, function confirm(updatedPlayer){
+		callback({status: "successful"});
+	})
+}
+
+function startGame(db, req, callback){
+
+	var playerQuery = {name: req.session.user.name}
+
+	database.read(db, "player", playerQuery, function updateGame(player){
+		var gameQuery = {id: player[0].gameID}
+		var gameUpdate = {
+			$set: {
+				status: "started"
+			}
+		}
+
+		database.read(db, "game", gameQuery, function updateGame(game){
+
+			if(game[0].players.length > 1){
+				database.update(db, "game", gameQuery, gameUpdate, function confirm(updatedPlayer){
+					callback({status: "success"});
+				})
+
+			} else {
+				callback({status: "fail", message: "You can't start a game by yourself. Invite friends!"});
+			}
+
+
+
+		})
+	})
+}
+
+
+
+
+/* misc */
+
 
 function apocalypse(db, callback){
 	database.remove(db, "player", {}, function(){
@@ -707,4 +904,10 @@ module.exports.assignWorker = assignWorker;
 module.exports.groupUnit = groupUnit;
 module.exports.attackPlayer = attackPlayer;
 module.exports.createNewGame = createNewGame;
+module.exports.getInvites = getInvites;
+module.exports.directToGame = directToGame;
+module.exports.invite = invite;
+module.exports.joinGame = joinGame;
+module.exports.nameCity = nameCity;
+module.exports.startGame = startGame;
 module.exports.apocalypse = apocalypse;

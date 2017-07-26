@@ -1,0 +1,25 @@
+<% include partials/_header.ejs %>
+
+<form action = "/invite" method = "post">
+    <input type="text" name="name" id="player-name" placeholder="player name" autofocus></input>
+    <br>
+    <br>
+
+    <input type = "submit" id = "invite-submit" value= "Invite player"></input>
+</form>
+
+<br>
+<br>
+<br>
+
+<form action = "/startgame" method = "post">
+    <p class = "bad-action bold">Warning: other players can't join after you start!</p>
+    <input type = "submit" value= "Start the Game"></input>
+</form>
+
+
+
+
+<% include partials/_footer.ejs %>
+
+<script src = "/js/gameActions.js"></script>

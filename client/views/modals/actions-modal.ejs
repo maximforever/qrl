@@ -25,16 +25,17 @@ Game ID: <%= opponent.gameID %>
     <% } %>
 <% }) %>
 <% if (assigned1 == 0) { %>
-    There are no units in Group 1
+    There are no units in Group 1. <a class = "group">Group your units!</a>
 <% } else { %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
+    <% if (player.groups.one.status == "free") { %>
+        Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
+        <br>
+        <button class = "attack-player" data-group="one" data-opponent=<%= opponent.name %>>Group 1: Attack</button>
+    <% } %>
 <% } %>
 
-<% if (player.groups.one.status == "free") { %>
-    Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
-    <br>
-    <button class = "attack-player" data-group="one" data-opponent=<%= opponent.name %>>Group 1: Attack</button>
-<% } %>
+
 
 
 
@@ -59,15 +60,14 @@ Game ID: <%= opponent.gameID %>
     <% } %>
 <% }) %>
 <% if (assigned2 == 0) { %>
-    There are no units in group 2
+    There are no units in Group 2. <a class = "group">Group your units!</a>
 <% } else { %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
-<% } %>
-
-<% if (player.groups.two.status == "free") { %>
-    Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
-    <br>
-    <button class = "attack-player" data-group="two" data-opponent=<%= opponent.name %>>Group 2: Attack</button>
+    <% if (player.groups.two.status == "free") { %>
+        Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
+        <br>
+        <button class = "attack-player" data-group="two" data-opponent=<%= opponent.name %>>Group 2: Attack</button>
+    <% } %>
 <% } %>
 
 
@@ -93,15 +93,14 @@ Game ID: <%= opponent.gameID %>
 <% }) %>
 
 <% if (assigned3 == 0) { %>
-    There are no units in Group 3
+    There are no units in Group 3. <a class = "group">Group your units!</a>
 <% } else { %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
-<% } %>
-
-<% if (player.groups.three.status == "free") { %>
-    Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
-    <br>
-    <button class = "attack-player" data-group="three" data-opponent=<%= opponent.name %>>Group 3: Attack</button>
+    <% if (player.groups.three.status == "free") { %>
+        Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
+        <br>
+        <button class = "attack-player" data-group="three" data-opponent=<%= opponent.name %>>Group 3: Attack</button>
+    <% } %>
 <% } %>
 
 
