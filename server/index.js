@@ -298,22 +298,6 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
     })
 
 
-    /* create map */
-
-    app.get("/new-map", function(req, res){
-        dbops.createMap(db, req, function sendMap(response){
-            if(response.status == "success"){
-                res.send(response)
-            } else {
-                res.send({message: response.message})
-            }
-        });
-    })
-
-
-
-
-
     /* create game */
 
     app.post("/new-game", function(req, res){

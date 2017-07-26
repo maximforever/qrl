@@ -24,7 +24,6 @@ function main(){
                 	player = newData.playerData;
                 	units = newData.unitData;
                     opponents = newData.opponentData;
-                    map = newData.map;
 
                     scouts = units.filter(function(el){         // this is how we get from all units to individual units
                         return el.type == "scout"
@@ -92,26 +91,6 @@ function main(){
                     }
                     
 
-
-                    /* map */
-                    drawMap(map);
-
-                   /* $(".group-section").empty();
-
-                   
-                    if(player.groups["one"].size > 0){
-                        $(".group-section").append("<button>Group 1</button><br>");
-                    }
-
-                    if(player.groups["two"].size > 0){
-                        $(".group-section").append("<button>Group 2</button><br>");
-                    }
-
-
-                    if(player.groups["three"].size > 0){
-                        $(".group-section").append("<button>Group 3</button><br>");
-                    }
-*/
 
                 }
             })
@@ -384,22 +363,6 @@ function main(){
         })
 
     });
-
-
-
-    /* create map */
-
-    function drawMap(map){
-
-        $("#map-graphic").empty();
-
-        map.forEach(function(row){
-            row.forEach(function(tile){
-                $("#map-graphic").append("<span class = ' map-tile " + tile.type + "' data-x=" + tile.x + " data-y=" + tile.y + ">x</span>");
-            })
-            $("#map-graphic").append("<br>");
-        })
-    }
 
 
 

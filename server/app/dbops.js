@@ -45,38 +45,34 @@ function soldier(str, armor, speed){
 
 function createNewGame(db, req, callback){
 
-	newGameMap = createMap(db, req, function createGame(mapForGame){
-
-		if(req.body.gameID == null){
-			var newGame = {
-				id: Date.now(),
-				status: "setup",
-				leader: req.session.user.name,
-				players: [req.session.user.name],
-				map: mapForGame.map
-			}
-
-			database.create(db, "game", newGame, function(createdGame){												// create new game in DB
-				console.log("Created Game: ");
-				console.log(createdGame.ops[0]);			// no idea why we need to do this here instead of just createdGame[0] as we would everywhere else
-				var gameUpdate = {$set: {
-					gameID: createdGame.ops[0].id,
-					"assets.city.name": req.body.capital
-				}}
-
-				req.session.user.gameID = createdGame.ops[0].id;
-
-				database.update(db, "player", {name: newGame.leader}, gameUpdate, function(updatedPlayer){			// set leader gameID to the newly created game ID
-					callback({status: "success", game: createdGame})
-
-				})	
-			})
-
-		} else {
-			callback({status: "fail", message: "Already in a game"})
+	if(req.body.gameID == null){
+		var newGame = {
+			id: Date.now(),
+			status: "setup",
+			leader: req.session.user.name,
+			players: [req.session.user.name]
 		}
 
-	});
+		database.create(db, "game", newGame, function(createdGame){												// create new game in DB
+			console.log("Created Game: ");
+			console.log(createdGame.ops[0]);			// no idea why we need to do this here instead of just createdGame[0] as we would everywhere else
+			var gameUpdate = {$set: {
+				gameID: createdGame.ops[0].id,
+				"assets.city.name": req.body.capital
+			}}
+
+			req.session.user.gameID = createdGame.ops[0].id;
+
+			database.update(db, "player", {name: newGame.leader}, gameUpdate, function(updatedPlayer){			// set leader gameID to the newly created game ID
+				callback({status: "success", game: createdGame})
+
+			})	
+		})
+
+	} else {
+		callback({status: "fail", message: "Already in a game"})
+	}
+
 }
 
 
@@ -148,28 +144,37 @@ function createNewPlayer(db, req, callback){
 	                        	type: "east-wall",
 	                            material: "wood",
 	                            hp: 100,
-	                            max_hp: 100
+	                            max_hp: 100,
+	                            unit_group: "none"
 	                        },
 	                        west: {
 	                        	name: "Western wall",
 	                        	type: "west-wall",
 	                            material: "wood",
 	                            hp: 100,
-	                            max_hp: 100
+	                            max_hp: 100,
+	                            unit_group: "none"
 	                        },
 	                        north: {
 	                        	name: "Northern wall",
 	                        	type: "north-wall",
 	                            material: "wood",
 	                            hp: 100,
-	                            max_hp: 100
+	                            max_hp: 100,
+	                            unit_group: "none"
 	                        },
 	                        south: {
 	                        	name: "Southern wall",
 	                        	type: "south-wall",
 	                            material: "wood",
 	                            hp: 100,
-	                            max_hp: 100
+	                            max_hp: 100,
+	                            unit_group: "none"
+	                        },
+	                        gates: {
+	                        	name: "Gates",
+	                        	type: "gates",
+	                        	unit_group: "none"
 	                        }
 	                    }
 	                }
@@ -306,8 +311,7 @@ function getGameData(db, req, callback){
 				var updatedData = { 
 					playerData: thisPlayer[0].assets,
 					unitData: newestUnitData,
-					opponentData: otherPlayers,
-					map: newestGameData[0].map
+					opponentData: otherPlayers
 				}
 				callback(updatedData);
 			})
@@ -691,56 +695,6 @@ function techAvailable(unit, player){						// check if we have the right buildin
 	return true;				// false if we don't
 }
 
-/* create map */
-
-function createMap(db, req, callback){
-
-	if(req.session.user){				// let's make sure the player is logged in
-
-		console.log("making new map!");
-
-		newMap = [[],[],[],[],[],[],[],[],[],[]]				// 10 x 10 map
-
-		var height = 10;
-		var width = 10;
-		var roll;
-
-
-
-		for(var i=0; i < width; i++){
-			for(var j=0; j < height; j++){
-
-				roll = Math.random();
-
-
-				if(roll < 0.3){
-					mapType = "water";
-				} else {
-					mapType = "grass";
-				}
-
-
-
-				newMap[j][i] ={
-					type: mapType,
-					x: i,
-					y: j,
-					unit: null,
-					city: null
-				};
-				console.log("Made tile [" + i + ", " + j + "]");
-			}
-		}
-
-		callback({status: "success", map: newMap})
-
-	} else {
-		callback({status: "fail", message: "You must be logged in"});
-	}
-};
-
-
-
 
 
 
@@ -752,6 +706,5 @@ module.exports.build = build;
 module.exports.assignWorker = assignWorker;
 module.exports.groupUnit = groupUnit;
 module.exports.attackPlayer = attackPlayer;
-module.exports.createMap = createMap;
 module.exports.createNewGame = createNewGame;
 module.exports.apocalypse = apocalypse;

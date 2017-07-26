@@ -54,7 +54,7 @@ button {
 	background: yellow;
 }
 
-#opponents, #map, .bldg{
+#opponents, #actions, .bldg{
     display: none;
 }
 
@@ -71,6 +71,24 @@ button {
 .new {
     text-align: center;
 }
+
+/* actions */
+
+.good-action {
+    color: blue;
+}
+
+.bad-action {
+    color: red;
+}
+
+.old-action {
+    color: gray;
+    opacity: 0.5;
+}
+
+
+/* popup */
 
 .popup {
     min-height: 40%;
@@ -108,33 +126,6 @@ button {
 
 #close:hover {
     color: red;
-}
-
-#map-container{
-    text-align: center;
-}
-
-#map-graphic {
-    height: 40vh;
-    width: 40vh;
-    border: 1px solid black;
-    margin: auto;
-}
-
-
-/*  map styling */
-
-.map-tile {
-    padding: 8% 4%;
-  //  border: 1px solid black;
-}
-
-.grass {
-    color: #1C8E20;
-}
-
-.water {
-    color: #1561C4;
 }
 
 
