@@ -24,6 +24,7 @@ function main(){
                 	player = newData.playerData;
                 	units = newData.unitData;
                     opponents = newData.opponentData;
+                    notifications = newData.notificationData;
 
                     scouts = units.filter(function(el){         // this is how we get from all units to individual units
                         return el.type == "scout"
@@ -88,6 +89,27 @@ function main(){
                         });
                     } else {
                         $(".opponents").append("<p>You don't have anyone to play with :*( Get some friends!</p>")
+                    }
+
+
+                    /* actions */
+
+                    $("#action-container").empty();
+
+                    if(notifications.length > 0 ){
+                        notifications.forEach(function(action){
+
+                            if(action.type == "attack"){
+                                $("#action-container").append("<p id = '" + action.id +"'> <span class = 'bold'>" + action.from + "</span> has sent soldiers to attack you. They will be here in <span data-id = '" + action.id + "'></span><button>Move soldiers to defend</button><button>Scout</button></p>")
+                                $("span[data-id='" + action.id + "']").text("1 million years");
+                            }
+
+                            
+
+
+
+
+                        })
                     }
                     
 

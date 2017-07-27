@@ -29,7 +29,6 @@ Game ID: <%= opponent.gameID %>
 <% } else { %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
     <% if (player.groups.one.status == "free") { %>
-        Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
         <br>
         <button class = "attack-player" data-group="one" data-opponent=<%= opponent.name %>>Group 1: Attack</button>
     <% } %>
@@ -64,7 +63,6 @@ Game ID: <%= opponent.gameID %>
 <% } else { %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
     <% if (player.groups.two.status == "free") { %>
-        Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
         <br>
         <button class = "attack-player" data-group="two" data-opponent=<%= opponent.name %>>Group 2: Attack</button>
     <% } %>
@@ -97,7 +95,6 @@ Game ID: <%= opponent.gameID %>
 <% } else { %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
     <% if (player.groups.three.status == "free") { %>
-        Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
         <br>
         <button class = "attack-player" data-group="three" data-opponent=<%= opponent.name %>>Group 3: Attack</button>
     <% } %>

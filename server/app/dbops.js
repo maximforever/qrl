@@ -312,7 +312,8 @@ function getGameData(db, req, callback){
 				var updatedData = { 
 					playerData: thisPlayer[0].assets,
 					unitData: newestUnitData,
-					opponentData: otherPlayers
+					opponentData: otherPlayers,
+					notificationData: thisPlayer[0].assets.notifications
 				}
 				callback(updatedData);
 			})
