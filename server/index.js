@@ -169,11 +169,16 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
             if(req.session.user.gameID){
                 console.log("in a game...");
                 console.log("Game ID: " + req.session.user.gameID);
-                dbops.getGameData(db, req, function sendGameData(gameData){
-                    onload.addResources(db, req, function(){
-                        res.send(gameData);
-                    });  
-                })
+                
+                onload.checkForAttacks(db, req, function confirm(){
+                    onload.addResources(db, req, function resourcesAdded(){
+                        dbops.getGameData(db, req, function sendGameData(gameData){
+                            res.send(gameData);
+                        })          
+                    });          
+                });  
+
+
             } else {
                 console.log("NOT IN A GAME!");
                 req.session.error = "You are not in a game yet.";

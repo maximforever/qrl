@@ -1,5 +1,6 @@
 const database = require("./database");
-const CYCLE = 1000*60*60*12 				// 1 cycle = 12 hours
+const CYCLE = 1000*60*4; 				// 1 cycle = 12 hours - currently 4 mins
+		   // 1000*60*60*12
 
 
 
@@ -202,7 +203,7 @@ function createNewPlayer(db, req, callback){
 	                        lastUpdated: Date.now()
 	                    }
 	                }
-	            }
+	            }, notifications: []
             }
         }
 
@@ -626,10 +627,12 @@ function attackPlayer(db, req, callback){
 
 
 					var attack = {
+						id: Date.now(),
 						from: req.session.user.name,
 						to: opponent[0].name,
 						type: "attack",
 						units: groupUnits,
+						notified: false,
 						declared: Date.now(),
 						expires: (Date.now() + CYCLE)
 					}
@@ -799,6 +802,7 @@ function joinGame(db, req, callback){
 			if(game[0].players.indexOf(req.session.user.name) == -1){
 				database.update(db, "game", gameQuery, gameUpdate, function deleteInvite(updatedGame){
 					database.remove(db, "action", inviteQuery, function confirmUpdate(response){
+						req.session.user.gameID = parseInt(req.body.id);
 						callback({status: "success"});
 					})
 				});
