@@ -236,7 +236,7 @@ function login(db, req, callback){
 	if((req.body.name).replace(/\s/g, '').length > 0){    	// let's make sure the input name isn't empty  
 
 		var playerQuery = {
-			name: req.body.name
+			name: req.body.name.toLowercase()
 		}	
 
 		database.read(db, "player", playerQuery, function(existingPlayer){
@@ -1085,7 +1085,7 @@ function battle (db, req, callback){
 											}
 
 
-											
+
 
 
 
