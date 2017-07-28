@@ -1,4 +1,9 @@
-/* THIS IS A SAMPLE COMBAT MECHANICS FILE */
+/* 
+
+THIS IS A SAMPLE COMBAT MECHANICS SCRIPT 
+THIS MECHANIC IS USED IN THE ACTUAL GAME
+
+*/
 
 function Unit(id, type, player, str, armor, speed, hp){
 	this.id = id;

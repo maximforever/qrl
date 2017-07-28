@@ -931,6 +931,7 @@ function battle (db, req, callback){
 	6. check if defender is dead. 
 		- if dead, remove from all 3 arrays (p1, p2, allUnits)
 	7. destroy all the dead units - units in the defeated group for the defeated player
+	8. change the notification for the winning/losing player
 */
 
 	var actionQuery = { id: parseInt(req.body.id) }
@@ -1003,15 +1004,10 @@ function battle (db, req, callback){
 									console.log("ENDING BATTLE");
 									console.log("===========");
 
-
-									
-
 									/* remove off all the dead units and reset dead group */
 
 									var loserName;
 									var loserGroup;
-
-									
 
 										if(winner == player1){
 											console.log("The winner is player 1, " + winner);
@@ -1081,12 +1077,28 @@ function battle (db, req, callback){
 
 											console.log("We have " + losingUnitsRemovalQuery.$or.length + " units belonging to " + losingUnitsRemovalQuery.$or[0].owner + " to remove");			// this is a weird way to get the loser's name, but it ensures that the queries are correct
 
+											var notificationUpdate = {
+												$set:{
+													expires: Date.now(),
+													winner: winnerName
+												}
+											}
+
+
+											
+
+
+
+
+
 
 											database.update(db, "player", loserQuery, losingPlayerUpdateQuery, function updateLosingPlayer(updatedLoser){
 												database.update(db, "player", winnerQuery, winningGroupStatusUpdate, function updateWinningPlayer(updatedWinner){
-													database.remove(db, "unit", losingUnitsRemovalQuery, function removeDeadUnits(units){
-														callback({status: "success", message: (winner + "has won the battle")});
-													})
+													
+														database.remove(db, "unit", losingUnitsRemovalQuery, function removeDeadUnits(units){
+															callback({status: "success", message: (winnerName + "has won the battle")});
+														});
+													
 												});
 											});
 										})
@@ -1114,10 +1126,6 @@ function battle (db, req, callback){
 		}
 	})
 
-
-
-
-	
 }
 
 

@@ -103,14 +103,15 @@ function main(){
     
                             var timeToExpire = Math.floor((action.expires - Date.now())/1000);             // seconds 
 
-                                if(timeToExpire >= -10000 ){
+                                if(timeToExpire >= 0 ){
                                     $("#action-container").append("<p id = '" + action.action_id +"'> <span class = 'bold'>" + action.from + "</span> has sent soldiers to attack you. They will be here in <span data-id = '" + action.action_id + "'></span> seconds</p>")
-                                    $("#action-container").append("<br><button class = 'defenses'>Move soldiers to defend</button>");
+                                    $("#action-container").append("<br><p>Hint: move a unit group to the city gates to meet your opponent head on.</p>");
+                                    $("#action-container").append("<br><button class = 'defenses'>Set up your defenses</button>");
                                     $("#action-container").append("<br><button>Scout</button>");
                                     $("#action-container").append("<br><button class = 'engage' data-id=" + action.action_id + " >Engage now</button>");
                                     $("span[data-id='" + action.action_id + "']").text(timeToExpire);
                                 } else {
-                                    $("#action-container").append("<p>The forces <span class = 'bold'>" + action.from + "</span> sent have arrived</p>")
+                                    $("#action-container").append("<p><span class = 'bold'>" + action.from + "</span> has attacked you.<span class = 'bold'>" + action.winner + "</span> won.</p>")
                                 }
                             }
                         })
@@ -469,7 +470,7 @@ function main(){
     /* battle */
 
     $("body").on("click", ".engage", function(){
-        
+
         var thisID = $(this).attr("data-id");
 
         var engageData = {

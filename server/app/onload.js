@@ -103,7 +103,7 @@ function checkForAttacks(db, req, callback){
         2. add a notification based on this attack
     */
 
-    var notificationTime = Date.now() + CYCLE;          
+    var notificationTime = Date.now() + CYCLE/2;          
 
     var date = new Date(notificationTime);
     console.log("Looking for actions that expire before " + date);
@@ -128,6 +128,7 @@ function checkForAttacks(db, req, callback){
                         from: attack.from,                
                         action_id: attack.id,
                         expires: attack.expires,
+                        winner: null,
                         type: "attack"
                     }
 
@@ -158,6 +159,21 @@ function checkForAttacks(db, req, callback){
         }
         callback();
     })
+}
+
+
+function resolveAttacks(db,req, callback){
+
+    /*
+        1. find all attacks against the player where the expires date >= Date.now()
+        2. if the attack.to player has a unit at the gate...
+            a. get that unit
+            b. engage that unit with dbops.battle
+        3. if the attack.to player doesn't have a unit at the gate...
+            a. 
+    */
+
+
 }
 
 function clearNotifications(){
