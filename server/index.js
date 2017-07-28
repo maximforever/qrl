@@ -22,11 +22,14 @@ const dbops = require("./app/dbops");
 const database = require("./app/database");
 const onload = require("./app/onload");
 
-var dbAddress = "mongodb://" + process.env.MLAB_USERNAME + ":" + process.env.MLAB_PASSWORD + "@ds031551.mlab.com:31551/qrl"
+if(process.env.LIVE){                                                                           // this is how I do config, folks. put away your pitforks, we're all learning here.
+    dbAddress = "mongodb://" + process.env.MLAB_USERNAME + ":" + process.env.MLAB_PASSWORD + "@ds031551.mlab.com:31551/qrl";
+} else {
+    dbAddress = "mongodb://localhost:27017/qrl";
+}
 
 
-
-MongoClient.connect("mongodb://localhost:27017/qrl" || dbAddress, function(err, db){
+MongoClient.connect(dbAddress, function(err, db){
     if (err){
         console.log("MAYDAY! MAYDAY! Crashing.");
         return console.log(err);
