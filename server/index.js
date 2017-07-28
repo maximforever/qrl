@@ -18,20 +18,15 @@ app.use(express.static('client'));         // sets the correct views for the CSS
 
 
 
-
-
 const dbops = require("./app/dbops");
 const database = require("./app/database");
 const onload = require("./app/onload");
 
-/*
-    local address:
-    mongodb://localhost:27017/qrl
-*/
-
 var dbAddress = "mongodb://" + process.env.MLAB_USERNAME + ":" + process.env.MLAB_PASSWORD + "@ds031551.mlab.com:31551/qrl"
 
-MongoClient.connect(dbAddress, function(err, db){
+
+
+MongoClient.connect("mongodb://localhost:27017/qrl" || dbAddress, function(err, db){
     if (err){
         console.log("MAYDAY! MAYDAY! Crashing.");
         return console.log(err);
