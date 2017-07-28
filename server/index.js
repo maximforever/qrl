@@ -391,6 +391,29 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
         });
     })
 
+/* battle */
+
+
+
+    app.post("/engage", function(req, res){
+        dbops.battle(db, req, function redirectToGame(response){
+            console.log("engage response.status: " + response.status)
+            if(response.status == "success"){
+                res.send(response)
+            } else {
+                res.send({message: response.message})
+            }
+        });
+    })
+
+
+
+
+
+
+
+
+
 
 /* END ROUTES */
 

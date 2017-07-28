@@ -99,13 +99,15 @@ function main(){
                     if(notifications.length > 0 ){
                         notifications.forEach(function(action){
 
-
                             if(action.type == "attack"){
     
                             var timeToExpire = Math.floor((action.expires - Date.now())/1000);             // seconds 
 
-                                if(timeToExpire >= 0 ){
-                                    $("#action-container").append("<p id = '" + action.action_id +"'> <span class = 'bold'>" + action.from + "</span> has sent soldiers to attack you. They will be here in <span data-id = '" + action.action_id + "'></span> seconds</p><p><button>Move soldiers to defend</button><button>Scout</button></p>")
+                                if(timeToExpire >= -10000 ){
+                                    $("#action-container").append("<p id = '" + action.action_id +"'> <span class = 'bold'>" + action.from + "</span> has sent soldiers to attack you. They will be here in <span data-id = '" + action.action_id + "'></span> seconds</p>")
+                                    $("#action-container").append("<br><button class = 'defenses'>Move soldiers to defend</button>");
+                                    $("#action-container").append("<br><button>Scout</button>");
+                                    $("#action-container").append("<br><button class = 'engage' data-id=" + action.action_id + " >Engage now</button>");
                                     $("span[data-id='" + action.action_id + "']").text(timeToExpire);
                                 } else {
                                     $("#action-container").append("<p>The forces <span class = 'bold'>" + action.from + "</span> sent have arrived</p>")
@@ -456,6 +458,31 @@ function main(){
                             $("#popup-content").append(defenseResult);
                         }
                     })
+                } else {
+                    $("#error").text(result.message);
+                }
+            }
+        })
+    });
+
+
+    /* battle */
+
+    $("body").on("click", ".engage", function(){
+        
+        var thisID = $(this).attr("data-id");
+
+        var engageData = {
+            id: thisID
+        }
+
+        $.ajax({
+            type: "post",
+            url: "/engage",
+            data: engageData,
+            success: function(result){
+                if(result.status == "success"){
+                    getUpdatedInfo();
                 } else {
                     $("#error").text(result.message);
                 }

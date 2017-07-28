@@ -314,7 +314,6 @@ function getGameData(db, req, callback){
 	})
 }
 
-
 function buyUnit(db, req, callback){
 
 	if(req.session.user){				// let's make sure the player is logged in
@@ -511,7 +510,6 @@ function assignWorker(db, req, callback){
 	}
 };
 
-
 function groupUnit(db, req, callback){
 
 	if(req.session.user){				// let's make sure the player is logged in
@@ -625,6 +623,7 @@ function attackPlayer(db, req, callback){
 							from: req.session.user.name,
 							to: opponent[0].name,
 							type: "attack",
+							group: req.body.group,
 							units: groupUnits,
 							notified: false,
 							declared: Date.now(),
@@ -825,8 +824,6 @@ function directToGame(db, req, callback){
 		})
 	})
 
-	
-
 }
 
 function joinGame(db, req, callback){
@@ -918,12 +915,294 @@ function startGame(db, req, callback){
 /* battle */
 
 
-function battle (db, req, p1, p2, callback){
+
+function battle (db, req, callback){
+
+/*
+	NOTE: p1 is the logged in player; p2 is the player attacking or being engaged
+
+	1. get all the units in each group
+	2. pick a random ID from all - archers go first (because... speed)
+	3. pick a random enemy from opposite player
+	4. calc damage 
+		- damage = str - armor
+		- check if archer vs. footman if yes --> ignore armor
+	5. reduce defender HP by damage
+	6. check if defender is dead. 
+		- if dead, remove from all 3 arrays (p1, p2, allUnits)
+	7. destroy all the dead units - units in the defeated group for the defeated player
+*/
+
+	var actionQuery = { id: parseInt(req.body.id) }
+	var playerQuery = { name: req.session.user.name }
+
+	console.log("Req body:");
+	console.log(req.body);
+
+
+	database.read(db, "action", actionQuery, function getAction(action){
+		
+		if(action.length > 0){
+			database.read(db, "player", playerQuery, function getPlayer(player){
+				if(player[0].assets.city.buildings.walls.gates.unit_group != "none"){
+
+
+					var player1 = player[0].name
+					var player2 = action[0].from;
+					var group1 = player[0].assets.city.buildings.walls.gates.unit_group				//let's engage by whatever's at the gates
+					var group2 = action[0].group;
+
+					var all = [];
+					var p1 = [];
+					var p2 = [];
+
+					var deadUnits = []; 
+
+					p1unitQuery = {
+						owner: player1,
+						group: group1
+					}
+
+					p2unitQuery = {
+						owner: player2,
+						group: group2
+					}
+
+					database.read(db, "unit", p1unitQuery, function getPlayerOneUnits(p1units){
+						database.read(db, "unit", p2unitQuery, function getPlayerOneUnits(p2units){
+
+							if(p1units.length > 0 && p2units.length > 0){
+
+
+								p1units.forEach(function(unit){							// array p1 will hold all the units from p1
+									p1.push(unit)
+									for(var i = 0; i < unit.stats.speed; i++){			// we add units to the ALL array in accordance to their speed
+										all.push(unit)
+									}
+								});
+
+								p2units.forEach(function(unit){							// array from p2 will hold all the units from p2
+									p2.push(unit)
+									for(var i = 0; i < unit.stats.speed; i++){
+										all.push(unit)
+									}
+								});
+
+								console.log("HERE ARE THE UNITS SO FAR:");
+								console.log("p1:");
+								console.log(p1);
+								console.log("p2:")
+								console.log(p2);
+								console.log("ALL:");
+								console.log(all);
+
+								console.log("===========");
+								console.log("COMMENCING BATTLE");
+								
+								oneBattle(all, p1, p2, function declareWinner(winner){				// oneBattle() runs until on the groups is defeated, and returns the name of the winning player
+									console.log("ENDING BATTLE");
+									console.log("===========");
+
+
+									
+
+									/* remove off all the dead units and reset dead group */
+
+									var loserName;
+									var loserGroup;
+
+									
+
+										if(winner == player1){
+											console.log("The winner is player 1, " + winner);
+											loserName = player2;
+											loserGroup = group2;
+											winnerName = player1;
+											winnerGroup = group1;
+										} else if(winner == player2){
+											console.log("The winner is player 1, " + winner);
+											loserName = player1;
+											loserGroup = group1;
+											winnerName = player2;
+											winnerGroup = group2;
+										}
+
+
+										var loserQuery = {
+											name: loserName
+										}
+
+										var winnerQuery = {
+											name: winnerName
+										}
+
+									database.read(db, "player", loserQuery, function getLoserPlayer(updatedLosingPlayer){
+										database.read(db, "player", winnerQuery, function getWinnerPlayer(updatedWinnerPlayer){
+											p1units.forEach(function(unit){
+												var deceased = {
+													id: unit.id
+												}
+
+												deadUnits.push(deceased);
+											})
+
+											var losingPlayerUpdateQuery = {
+												$set: {}
+											}
+
+											console.log("updatedLosingPlayer[0].assets.groups[loserGroup].location:");
+											console.log(updatedLosingPlayer[0].assets.groups[loserGroup].location);
+
+											if(updatedLosingPlayer[0].assets.groups[loserGroup].location == "gates"){					// if the group that lost lost at the gates, we need to set the gates group to none.
+												losingPlayerUpdateQuery.$set["assets.city.buildings.walls.gates.unit_group"] = "none";
+											}
+
+											losingPlayerUpdateQuery.$set["assets.groups." + loserGroup + ".location"] = "none";
+											losingPlayerUpdateQuery.$set["assets.groups." + loserGroup + ".status"] = "free";
+											losingPlayerUpdateQuery.$set["assets.groups." + loserGroup + ".size"] = 0;
+
+
+											var losingUnitsRemovalQuery = {
+												$or: deadUnits
+											}
+
+											var winningGroupStatusUpdate = {
+												$set: {}
+											}
+
+											winningGroupStatusUpdate.$set["assets.groups." + winnerGroup + ".status"] = "free";
+
+
+											console.log("deadUnits");
+											console.log(deadUnits);
+											console.log("losingUnitsRemovalQuery.$or");
+											console.log(losingUnitsRemovalQuery.$or);
+
+
+											console.log("We have " + losingUnitsRemovalQuery.$or.length + " units belonging to " + losingUnitsRemovalQuery.$or[0].owner + " to remove");			// this is a weird way to get the loser's name, but it ensures that the queries are correct
+
+
+											database.update(db, "player", loserQuery, losingPlayerUpdateQuery, function updateLosingPlayer(updatedLoser){
+												database.update(db, "player", winnerQuery, winningGroupStatusUpdate, function updateWinningPlayer(updatedWinner){
+													database.remove(db, "unit", losingUnitsRemovalQuery, function removeDeadUnits(units){
+														callback({status: "success", message: (winner + "has won the battle")});
+													})
+												});
+											});
+										})
+									})
+								});				
+								
+								
+
+								
+							} else {
+								console.log("p1units.length: " + p1units.length);
+								console.log("p2units.length: " + p2units.length);
+								console.log("Something went wrong - one of the groups is empty.")
+								callback({status: "fail", message: "One of the groups is empty"});
+							}
+						})
+					})
+				} else {
+					callback({status: "fail", message: "There's nobody at the gates"});
+				}
+			
+			})
+		} else {
+			callback({status: "fail", message: "Couldn't find that attack action"});
+		}
+	})
 
 
 
 
+	
 }
+
+
+function oneBattle(all, p1, p2, callback){
+
+
+	playerOneName = p1[0].owner;
+	playerTwoName = p2[0].owner;
+
+	var winner;
+
+
+	if(p1.length > 0 && p2.length > 0){
+		var attacker = all[Math.floor(Math.random()*all.length)];
+		var defender;
+		var damage;
+
+		
+
+		if (attacker.owner == playerOneName){
+			defender = p2[Math.floor(Math.random()*p2.length)];
+		} else if (attacker.owner == playerTwoName){
+			defender = p1[Math.floor(Math.random()*p1.length)];
+		}
+
+		console.log("attacker: " + attacker.id + ", " + attacker.type);
+		console.log("defender: " + defender.id + ", " + defender.type);
+
+		damage = attacker.stats.str - defender.stats.armor;
+
+		if(attacker.type == "archer"){				// if attacked by archer, ignore armor
+		console.log("ignoring armor!");
+			damage += defender.stats.armor;
+		}
+
+		console.log("defender " + defender.id + " HP pre-damage: " + defender.hp);
+
+		defender.hp -= damage;						// DEAL THE DAMAGE
+
+		console.log("defender " + defender.id + " HP post-damage: " + defender.hp);
+
+		/* if dead, remove from arrays... */
+
+		if(defender.hp <= 0){
+			console.log("XXXXXX unit " + defender.id + " is dead");
+
+
+			console.log("ALL length pre-filter: " + all.length);
+			console.log("P1 length pre-filter: " + p1.length);
+			console.log("P2 length pre-filter: " + p2.length);
+															
+			all = all.filter(function(unit){					// remove from all
+				return unit.id != defender.id;
+			})
+			
+			if(defender.owner == playerOneName){							// remove either from p1 or p2
+				p1 = p1.filter(function(unit){
+					return unit.id != defender.id;
+				})
+			} else if(defender.owner == playerTwoName){
+				p2 = p2.filter(function(unit){
+					return unit.id != defender.id;
+				})
+			}
+
+			console.log("ALL length post-filter: " + all.length);
+			console.log("P1 length post-filter: " + p1.length);
+			console.log("P2 length post-filter: " + p2.length);
+		}
+	
+		if(p1.length > 0 && p2.length > 0){
+			oneBattle(all, p1, p2, callback);
+		} else {
+			if(p1.length <= 0){
+				winner = playerTwoName;
+				console.log("P2 HAS WON. P1 is dead!");
+			} else if(p2.length <= 0){
+				winner = playerOneName;
+				console.log("P1 HAS WON. P2 is dead!");
+			}	
+			callback(winner);		
+		}
+	}
+}
+
 
 
 /* misc */
@@ -980,4 +1259,5 @@ module.exports.invite = invite;
 module.exports.joinGame = joinGame;
 module.exports.nameCity = nameCity;
 module.exports.startGame = startGame;
+module.exports.battle = battle;
 module.exports.apocalypse = apocalypse;
