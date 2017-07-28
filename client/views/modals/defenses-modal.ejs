@@ -1,0 +1,171 @@
+<% assigned0 = 0; assigned1 = 0; assigned2= 0; assigned3 = 0; %>
+<% assignedNorth = 0; assignedEast = 0; assignedSouth= 0; assignedWest = 0; assignedGates = 0; %>
+
+<p class = "flavor">The Group stationed at the City Gates engages with all incoming forces
+<br>If the City Gates are unguarded or the force guarding them is defeated, your enemy chooses which wall to attack.</p>
+
+<span class = "bold">Group 1: <%= player.groups.one.status %></span>
+<br>
+<% footman = 0; archer = 0; scout = 0; %>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == "one") {%>
+        <% if (unit.type == "footman") {%> 
+            <% footman++ %>
+            <% assigned1++ %>
+        <% } else if (unit.type == "archer") { %>
+            <% archer++ %>
+            <% assigned1++ %>
+        <% } else if (unit.type == "scout") { %>
+            <% scout++ %>
+            <% assigned1++ %>
+        <% } %>
+    <% } %>
+<% }) %>
+<% if (assigned1 == 0) { %>
+    There are no units in Group 1. <a class = "group">Group your units!</a>
+<% } else { %>
+    Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
+    <br>
+    <% if (player.groups.one.status == "free") { %>
+        <% if (player.groups.one.location == "none") { %>
+                <button class = "position" data-group="one" data-target="north">North wall</button>
+                <button class = "position" data-group="one" data-target="east">East wall</button>
+                <button class = "position" data-group="one" data-target="south">South wall</button>
+                <button class = "position" data-group="one" data-target="west">West wall</button>
+                <button class = "position" data-group="one" data-target="gates">City gates</button>
+            <% } else { %>
+                Group 1 is stationed at the <%= player.city.buildings.walls[player.groups.one.location].name %>.
+            <% } %>
+    <% } else { %>
+        Group 1 is occupied.
+    <% } %>
+<% } %>
+
+
+
+
+
+<br><br>
+
+<span class = "bold">Group 2: <%= player.groups.two.status %></span>
+<br>
+<% footman = 0; archer = 0; scout = 0; %>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == "two") {%>
+        <% if (unit.type == "footman") {%> 
+            <% footman++ %>
+            <% assigned2++ %>
+        <% } else if (unit.type == "archer") { %>
+            <% archer++ %>
+            <% assigned2++ %>
+        <% } else if (unit.type == "scout") { %>
+            <% scout++ %>
+            <% assigned2++ %>
+        <% } %>
+    <% } %>
+<% }) %>
+<% if (assigned2 == 0) { %>
+    There are no units in Group 2. <a class = "group">Group your units!</a>
+<% } else { %>
+    Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
+    <br>
+    <% if (player.groups.two.status == "free") { %>
+        <% if (player.groups.two.location == "none") { %>
+                <button class = "position" data-group="two" data-target="north">North wall</button>
+                <button class = "position" data-group="two" data-target="east">East wall</button>
+                <button class = "position" data-group="two" data-target="south">South wall</button>
+                <button class = "position" data-group="two" data-target="west">West wall</button>
+                <button class = "position" data-group="two" data-target="gates">City gates</button>
+            <% } else { %>
+                Group 2 is stationed at the <%= player.city.buildings.walls[player.groups.two.location].name %>.
+            <% } %>
+    <% } else { %>
+        Group 2 is occupied.
+    <% } %>
+<% } %>
+
+
+
+
+<br><br>
+
+<span class = "bold">Group 3: <%= player.groups.three.status %></span>
+<br>
+<% footman = 0; archer = 0; scout = 0; %>
+<% units.forEach(function(unit){ %>
+    <% if (unit.group == "three") {%>
+        <% if (unit.type == "footman") {%> 
+            <% footman++ %>
+            <% assigned3++ %>
+        <% } else if (unit.type == "archer") { %>
+            <% archer++ %>
+            <% assigned3++ %>
+        <% } else if (unit.type == "scout") { %>
+            <% scout++ %>
+            <% assigned3++ %>
+        <% } %>
+    <% } %>
+<% }) %>
+<% if (assigned3 == 0) { %>
+    There are no units in Group 3. <a class = "group">Group your units!</a>
+<% } else { %>
+    Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
+    <br>
+    <% if (player.groups.three.status == "free") { %>
+        <% if (player.groups.three.location == "none") { %>
+                <button class = "position" data-group="three" data-target="north">North wall</button>
+                <button class = "position" data-group="three" data-target="east">East wall</button>
+                <button class = "position" data-group="three" data-target="south">South wall</button>
+                <button class = "position" data-group="three" data-target="west">West wall</button>
+                <button class = "position" data-group="three" data-target="gates">City gates</button>
+            <% } else { %>
+                Group 3 is stationed at the <%= player.city.buildings.walls[player.groups.three.location].name %>.
+            <% } %>
+    <% } else { %>
+        Group 3 is occupied.
+    <% } %>
+<% } %>
+
+
+
+
+<br>
+<br>
+<br>
+
+<p><span class = "bold">Current defenses (group): </span></p>
+<p>
+    <span class = "bold">North Wall: </span><%= player.city.buildings.walls.north.unit_group %>
+    <% if (player.city.buildings.walls.north.unit_group != "none"){ %>
+        <button class = "position" data-group=<%=player.city.buildings.walls.north.unit_group%> data-target="none">Remove</button>
+    <% } %>
+</p>
+
+<p>
+    <span class = "bold">East Wall: </span><%= player.city.buildings.walls.east.unit_group %>
+    <% if (player.city.buildings.walls.east.unit_group != "none"){ %>
+        <button class = "position" data-group=<%=player.city.buildings.walls.east.unit_group%> data-target="none">Remove</button>
+    <% } %>
+</p>
+
+<p>
+    <span class = "bold">South Wall: </span><%= player.city.buildings.walls.south.unit_group %>
+    <% if (player.city.buildings.walls.south.unit_group != "none"){ %>
+        <button class = "position" data-group=<%=player.city.buildings.walls.south.unit_group%> data-target="none">Remove</button>
+    <% } %>
+</p>
+
+<p>
+    <span class = "bold">West Wall: </span><%= player.city.buildings.walls.west.unit_group %>
+    <% if (player.city.buildings.walls.west.unit_group != "none"){ %>
+        <button class = "position" data-group=<%=player.city.buildings.walls.west.unit_group%> data-target="none">Remove</button>
+    <% } %>
+</p>
+
+<p>
+    <span class = "bold">City Gates: </span><%= player.city.buildings.walls.gates.unit_group %>
+    <% if (player.city.buildings.walls.gates.unit_group != "none"){ %>
+        <button class = "position" data-group=<%=player.city.buildings.walls.gates.unit_group%> data-target="none">Remove</button>
+    <% } %>
+</p>
+

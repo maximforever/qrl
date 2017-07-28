@@ -39,11 +39,6 @@ function soldier(str, armor, speed){
 	this.speed = speed;
 }
 
-
-
-
-
-
 function createNewGame(db, req, callback){
 
 	if(req.body.gameID == null){
@@ -76,7 +71,6 @@ function createNewGame(db, req, callback){
 
 }
 
-
 function createNewPlayer(db, req, callback){
 	if((req.body.name).replace(/\s/g, '').length > 0){    	// let's make sure the input name isn't empty  
 		var newPlayer = {
@@ -92,17 +86,17 @@ function createNewPlayer(db, req, callback){
             	allies: [],
             	groups:{
             		one: {
-            			location: "home",
+            			location: "none",
             			status: "free",
 	            		size: 0
 	            	}, 
 	            	two: {
-	            		location: "home",
+	            		location: "none",
 	            		status: "free",
 	            		size: 0
 	            	},
 	            	three: {
-	            		location: "home",
+	            		location: "none",
 	            		status: "free",
 	            		size: 0
 	            	}
@@ -139,9 +133,8 @@ function createNewPlayer(db, req, callback){
 	                        max_hp: 100
 	                    },
 	                    walls: {
-	                    	built: true,
 	                        east: {
-	                        	name: "Eastern wall",
+	                        	name: "East wall",
 	                        	type: "east-wall",
 	                            material: "wood",
 	                            hp: 100,
@@ -149,7 +142,7 @@ function createNewPlayer(db, req, callback){
 	                            unit_group: "none"
 	                        },
 	                        west: {
-	                        	name: "Western wall",
+	                        	name: "West wall",
 	                        	type: "west-wall",
 	                            material: "wood",
 	                            hp: 100,
@@ -157,7 +150,7 @@ function createNewPlayer(db, req, callback){
 	                            unit_group: "none"
 	                        },
 	                        north: {
-	                        	name: "Northern wall",
+	                        	name: "North wall",
 	                        	type: "north-wall",
 	                            material: "wood",
 	                            hp: 100,
@@ -165,7 +158,7 @@ function createNewPlayer(db, req, callback){
 	                            unit_group: "none"
 	                        },
 	                        south: {
-	                        	name: "Southern wall",
+	                        	name: "South wall",
 	                        	type: "south-wall",
 	                            material: "wood",
 	                            hp: 100,
@@ -173,7 +166,7 @@ function createNewPlayer(db, req, callback){
 	                            unit_group: "none"
 	                        },
 	                        gates: {
-	                        	name: "Gates",
+	                        	name: "City Gates",
 	                        	type: "gates",
 	                        	unit_group: "none"
 	                        }
@@ -583,8 +576,6 @@ function groupUnit(db, req, callback){
 	}
 };
 
-
-
 function createUnit(db, newUnit, callback){
 	database.create(db, "unit", newUnit, function createUnitForPlayer(createdUnit){		// this creates the new unit
 		var unitQuery = {
@@ -597,7 +588,6 @@ function createUnit(db, newUnit, callback){
 		});
 	});
 }
-
 
 function attackPlayer(db, req, callback){
 
@@ -621,37 +611,46 @@ function attackPlayer(db, req, callback){
 					group: req.body.group
 				}
 
+				var playerQuery = {name: req.session.user.name}
+
 				database.read(db, "unit", unitQuery, function collectUnits(groupUnits){
+					database.read(db, "player", playerQuery, function updatedPlayer(player){
 
-					console.log("here are the units in this group:");
-					console.log(groupUnits);
+						console.log("here are the units in this group:");
+						console.log(groupUnits);
 
 
-					var attack = {
-						id: Date.now(),
-						from: req.session.user.name,
-						to: opponent[0].name,
-						type: "attack",
-						units: groupUnits,
-						notified: false,
-						declared: Date.now(),
-						expires: (Date.now() + CYCLE)
-					}
-
-					var playerUpdate = {
-						$set: {
+						var attack = {
+							id: Date.now(),
+							from: req.session.user.name,
+							to: opponent[0].name,
+							type: "attack",
+							units: groupUnits,
+							notified: false,
+							declared: Date.now(),
+							expires: (Date.now() + CYCLE)
 						}
-					}
 
-					playerUpdate.$set["assets.groups." + req.body.group + ".status"] = "attacking";
+						var playerUpdate = {
+							$set: {
+							}
+						}
 
-					database.create(db, "action", attack, function addAttack(attack){
-						database.update(db, "player", {name: req.session.user.name}, playerUpdate, function confirm(group){
+						var currentLocation = player[0].assets.groups[req.body.group].location
+						console.log("Current location for this group is: " + currentLocation);
 
-							callback({status: "success"});
+						playerUpdate.$set["assets.groups." + req.body.group + ".status"] = "attacking";
+						playerUpdate.$set["assets.city.buildings.walls." + currentLocation + ".unit_group"] = "none";
+						playerUpdate.$set["assets.groups."+ req.body.group + ".location"] = "none";
 
-						})
+						database.create(db, "action", attack, function addAttack(attack){
+							database.update(db, "player", {name: req.session.user.name}, playerUpdate, function confirm(group){
 
+								callback({status: "success"});
+
+							})
+
+						});
 					});
 				})
 			} else {
@@ -662,10 +661,62 @@ function attackPlayer(db, req, callback){
 		callback({status: "fail", message: "You must be logged in"});
 	}
 
-
-
 }
 
+function positionGroup(db, req, callback){
+
+	if(req.session.user){				// let's make sure the player is logged in
+		/*
+			1, if group status is free and the wall is free...
+			2. change group location to req.body.target
+			3. change player.assets.city.walls group to req.body.group
+		*/
+		console.log("req.body:")
+		console.log(req.body)
+
+		var playerQuery = {name: req.session.user.name}
+
+		database.read(db, "player", playerQuery, function getUpdatedPlayer(thisPlayer){
+
+			var player = thisPlayer[0];
+
+			if(player.assets.groups[req.body.group].status == "free"){
+				if(player.assets.city.buildings.walls[req.body.target].unit_group == "none" || req.body.target == "none"){
+					console.log("Group " + req.body.group + " is free");
+					var currentLocation = player.assets.groups[req.body.group].location;
+
+					var newGroup = "assets.groups." + req.body.group + ".location"; 
+					var newTarget = "assets.city.buildings.walls." + req.body.target + ".unit_group";
+					var currentLocation = "assets.city.buildings.walls." + currentLocation + ".unit_group";
+
+					var playerUpdate = {
+						$set: {}						
+					}
+
+					playerUpdate.$set[newGroup] = req.body.target;
+					playerUpdate.$set[newTarget] = req.body.group;
+					playerUpdate.$set[currentLocation] = "none";
+
+
+					database.update(db, "player", playerQuery, playerUpdate, function confirm(response){
+						callback({status: "success"});
+					})
+
+				} else {
+					console.log("player.assets.city.buildings.walls[req.body.target].unit_group:");
+					console.log(player.assets.city.buildings.walls[req.body.target])
+					callback({status: "fail", message: "You already have a group at this location"});
+				}
+
+			} else {
+				callback({status: "fail", message: "This group is occupied (likely attacking)"});
+			}
+		})
+
+	} else {
+		callback({status: "fail", message: "You must be logged in"});
+	}
+}
 
 /* invite/game functions */
 
@@ -755,7 +806,11 @@ function directToGame(db, req, callback){
 
 		database.read(db, "game", gameQuery, function getGame(game){
 			if(game[0].status == "started"){
-				callback({status: "started"});
+				if (player[0].assets.city.name == "null" || player[0].assets.city.name == null){
+					callback({status: "capital"});
+				} else {
+					callback({status: "started"});
+				}
 			} else {
 				if(req.session.user.name == game[0].leader){
 					callback({status: "invite"});
@@ -850,16 +905,25 @@ function startGame(db, req, callback){
 				})
 
 			} else {
-				callback({status: "fail", message: "You can't start a game by yourself. Invite friends!"});
+				callback({status: "fail", message: "You can't start a game by yourself. Invite some friends!"});
 			}
-
-
-
 		})
 	})
 }
 
 
+
+
+
+/* battle */
+
+
+function battle (db, req, p1, p2, callback){
+
+
+
+
+}
 
 
 /* misc */
@@ -907,6 +971,7 @@ module.exports.buyUnit = buyUnit;
 module.exports.build = build;
 module.exports.assignWorker = assignWorker;
 module.exports.groupUnit = groupUnit;
+module.exports.positionGroup = positionGroup;
 module.exports.attackPlayer = attackPlayer;
 module.exports.createNewGame = createNewGame;
 module.exports.getInvites = getInvites;

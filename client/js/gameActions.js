@@ -18,7 +18,7 @@ function main(){
                 dataType: "json",
                 url: "/game-info",
                 success: function(newData){
-
+                    console.log("got new data");
                 //	console.log(newData);                        // this is the update data we're receiving
 
                 	player = newData.playerData;
@@ -99,17 +99,20 @@ function main(){
                     if(notifications.length > 0 ){
                         notifications.forEach(function(action){
 
+
                             if(action.type == "attack"){
-                                $("#action-container").append("<p id = '" + action.id +"'> <span class = 'bold'>" + action.from + "</span> has sent soldiers to attack you. They will be here in <span data-id = '" + action.id + "'></span><button>Move soldiers to defend</button><button>Scout</button></p>")
-                                $("span[data-id='" + action.id + "']").text("1 million years");
+    
+                            var timeToExpire = Math.floor((action.expires - Date.now())/1000);             // seconds 
+
+                                if(timeToExpire >= 0 ){
+                                    $("#action-container").append("<p id = '" + action.action_id +"'> <span class = 'bold'>" + action.from + "</span> has sent soldiers to attack you. They will be here in <span data-id = '" + action.action_id + "'></span> seconds</p><p><button>Move soldiers to defend</button><button>Scout</button></p>")
+                                    $("span[data-id='" + action.action_id + "']").text(timeToExpire);
+                                } else {
+                                    $("#action-container").append("<p>The forces <span class = 'bold'>" + action.from + "</span> sent have arrived</p>")
+                                }
                             }
-
-                            
-
-
-
-
                         })
+
                     }
                     
 
@@ -412,14 +415,69 @@ function main(){
 
 
 
+    /* move units around */
+
+    $("body").on("click", ".defenses", function(){
+
+        $.ajax({
+            type: "get",
+            url: "/defenses",
+            success: function(result){
+                $(".popup").show();
+                $("#popup-content").empty();
+                $("#popup-content").append(result);
+            }
+        })
+    });
+
+    $("body").on("click", ".position", function(){
+
+        var thisGroup = $(this).attr("data-group");
+        var thisTarget = $(this).attr("data-target");
+
+        var positionData = {
+            group: thisGroup,
+            target: thisTarget
+        }
+
+
+        $.ajax({
+            type: "post",
+            url: "/defenses",
+            data: positionData,
+            success: function(result){
+                if(result.status == "success"){
+                    getUpdatedInfo();
+                    $.ajax({
+                        type: "get",
+                        url: "/defenses",
+                        success: function(defenseResult){
+                            $("#popup-content").empty();
+                            $("#popup-content").append(defenseResult);
+                        }
+                    })
+                } else {
+                    $("#error").text(result.message);
+                }
+            }
+        })
+    });
+
+
+
+
+
+
+
+
+    /* Display stuff */
+
+
 
     $("#close").click(function(){                               // close the popup
         $(".popup").css("display", "none    ");
     })
    
-
-
-    /* Display stuff */
 
 
     $(".tile").click(function(){

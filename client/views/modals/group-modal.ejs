@@ -13,7 +13,7 @@
             <button class = "assign small-button" data-id = <%= unit.id %> data-current = "none" data-group = "two">2</button>
         <% } %>
         <% if(player.groups.three.status == "free"){ %>
-        <button class = "assign small-button" data-id = <%= unit.id %> data-current = "none" data-group = "three">3</button>
+            <button class = "assign small-button" data-id = <%= unit.id %> data-current = "none" data-group = "three">3</button>
         <% } %>
         <br>
         <% assigned0++ %>
@@ -74,6 +74,4 @@
 <% if (assigned3 == 0) { %>
     There are no units in group 3
 <% } %>
-<br>
-
-
+<br><br>

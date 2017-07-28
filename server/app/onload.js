@@ -1,7 +1,7 @@
 const database = require("./database");
 const dbops = require("./dbops");
 
-const CYCLE = 1000*60*4;
+const CYCLE = 1000*60*6;
 
 function addResources(db, req, callback){
 
@@ -22,7 +22,7 @@ function addResources(db, req, callback){
         job: {
             $ne: "none"
         }   
-    }
+    }   
 
     database.read(db, "unit", unitQuery, function assignedWorkers(workers){
 
@@ -103,7 +103,7 @@ function checkForAttacks(db, req, callback){
         2. add a notification based on this attack
     */
 
-    var notificationTime = Date.now() + CYCLE/2;          
+    var notificationTime = Date.now() + CYCLE;          
 
     var date = new Date(notificationTime);
     console.log("Looking for actions that expire before " + date);

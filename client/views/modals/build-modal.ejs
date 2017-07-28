@@ -4,7 +4,7 @@
 <% Object.keys(buildings).forEach(function(bldg){  %>  
    
     <% building = buildings[bldg]%>
-    <% if(!building.built && building != "walls"){ %>
+    <% if(!building.built && (building.name == "Granary" || building.name == "Barracks")){ %>
         <button class = "build-action" id = "<%= building.type %>"><%= building.name %></button> cost: <%= building.cost %>
         <br>
         <% available++ %>

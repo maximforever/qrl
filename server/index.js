@@ -312,6 +312,20 @@ MongoClient.connect("mongodb://localhost:27017/qrl", function(err, db){
 
 
 
+    app.get("/defenses", function(req, res){
+        dbops.getGameData(db, req, function(updatedData){
+            res.render("modals/defenses-modal", {units: updatedData.unitData, player: updatedData.playerData});
+        }) 
+    });
+
+    app.post("/defenses", function(req, res){
+        dbops.positionGroup(db, req, function(response){
+            res.send(response);           
+        }) 
+    });
+
+
+
 
     /* delete everything*/
 
