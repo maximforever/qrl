@@ -189,6 +189,8 @@ function resolveAttacks(db,req, callback){
             console.log("Found " + attacks.length + " unresolved attacks for " + req.session.user.name);
 
             attacks.forEach(function(attack){
+                console.log("-- attack:");
+                console.log(attack);
                 if(attack.from == req.session.user.name || attack.to == req.session.user.name){
                     var attackedPlayer = {
                         name: attack.to
@@ -196,7 +198,10 @@ function resolveAttacks(db,req, callback){
 
                     dbops.engage(db, req, attack, function attackResult(response){
 
-                        var notificationBody = response.winnerName + " won a battle against " + response.loserName + " at " + response.city
+                        console.log("RESPONSE");
+                        console.log(response);
+
+                        var notificationBody = response.winner + " won a battle against " + response.loser + " at " + response.city
 
                         var notificationUpdateQuery = {
                             $push: {
@@ -207,8 +212,8 @@ function resolveAttacks(db,req, callback){
                             }
                         }
 
-                        var winnerQuery = {name: response.winnerName}
-                        var loserQuery = {name: response.loserName}
+                        var winnerQuery = {name: response.winner}
+                        var loserQuery = {name: response.loser}
 
                         database.update(db, "player", winnerQuery, notificationUpdateQuery, function updateWinner(winnerResponse){
                             database.update(db, "player", loserQuery, notificationUpdateQuery, function updateLoser(loserResponse){

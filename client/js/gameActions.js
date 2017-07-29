@@ -126,7 +126,7 @@ function main(){
                         $("#message-container").empty();
 
                         messages.forEach(function(message){
-                            $("#message-container").append(message + "<br>");
+                            $("#message-container").append(message.body + "<br>");
 
                         })
                     }

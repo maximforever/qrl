@@ -1320,7 +1320,7 @@ console.log("ENGAGING!");
 											database.update(db, "player", winnerQuery, winningGroupStatusUpdate, function updateWinningPlayer(updatedWinner){
 												
 													database.remove(db, "unit", losingUnitsRemovalQuery, function removeDeadUnits(units){
-														callback({status: "success", winner: winnerName, winner: loserName, city: updatedLosingPlayer[0].assets.city.name});
+														callback({status: "success", winner: winnerName, loser: loserName, city: updatedLosingPlayer[0].assets.city.name});
 													});
 												
 											});
