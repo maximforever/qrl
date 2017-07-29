@@ -1,5 +1,5 @@
 const database = require("./database");
-const CYCLE = 1000*60*4; 				// 1 cycle = 12 hours - currently 4 mins
+const CYCLE = 1000*60*0.5; 				// 1 cycle = 12 hours - currently 4 mins
 		   // 1000*60*60*12
 
 
@@ -196,7 +196,8 @@ function createNewPlayer(db, req, callback){
 	                        lastUpdated: Date.now()
 	                    }
 	                }
-	            }, notifications: []
+	            }, 	notifications: [],
+	            	messages: []
             }
         }
 
@@ -306,7 +307,8 @@ function getGameData(db, req, callback){
 					playerData: thisPlayer[0].assets,
 					unitData: newestUnitData,
 					opponentData: otherPlayers,
-					notificationData: thisPlayer[0].assets.notifications
+					notificationData: thisPlayer[0].assets.notifications,
+					messageData: thisPlayer[0].assets.messages
 				}
 				callback(updatedData);
 			})
@@ -625,6 +627,7 @@ function attackPlayer(db, req, callback){
 							type: "attack",
 							group: req.body.group,
 							units: groupUnits,
+							wall: req.body.wall,
 							notified: false,
 							declared: Date.now(),
 							expires: (Date.now() + CYCLE)
@@ -1128,6 +1131,224 @@ function battle (db, req, callback){
 
 }
 
+function engage (db, req, action, callback){		// this is the same as "Battle", but called internally...
+
+console.log("ENGAGING!");
+
+/*
+	NOTE: p1 is the logged in player; p2 is the player attacking or being engaged
+
+	1. get all the units in each group
+	2. pick a random ID from all - archers go first (because... speed)
+	3. pick a random enemy from opposite player
+	4. calc damage 
+		- damage = str - armor
+		- check if archer vs. footman if yes --> ignore armor
+	5. reduce defender HP by damage
+	6. check if defender is dead. 
+		- if dead, remove from all 3 arrays (p1, p2, allUnits)
+	7. destroy all the dead units - units in the defeated group for the defeated player
+	8. change the notification for the winning/losing player
+*/
+
+	var actionQuery = { id: parseInt(action.id) }
+	var playerQuery = { name: req.session.user.name }
+
+	database.read(db, "action", actionQuery, function getAction(action){
+		
+		if(action.length > 0){
+			database.read(db, "player", playerQuery, function getPlayer(player){
+				
+
+
+				var player1 = player[0].name;
+				var player2 = action[0].from;
+				var group1;
+
+				// if the gates are staffed, attack the unit group there
+
+				if(player[0].assets.city.buildings.walls.gates.unit_group != "none"){
+					console.log("Engaging unit group at City Gates");
+					group1 = player[0].assets.city.buildings.walls.gates.unit_group;				//let's engage by whatever's at the gates
+				} else {
+					console.log("Engaging unit group at " + action[0].wall);
+					group1 = player[0].assets.city.buildings.walls[action[0].wall].unit_group;	
+				}
+
+				var group2 = action[0].group;
+
+				var all = [];
+				var p1 = [];
+				var p2 = [];
+
+				var deadUnits = []; 
+
+				p1unitQuery = {
+					owner: player1,
+					group: group1
+				}
+
+				p2unitQuery = {
+					owner: player2,
+					group: group2
+				}
+
+				database.read(db, "unit", p1unitQuery, function getPlayerOneUnits(p1units){
+					database.read(db, "unit", p2unitQuery, function getPlayerOneUnits(p2units){
+
+						if(p1units.length > 0 && p2units.length > 0){
+
+
+							p1units.forEach(function(unit){							// array p1 will hold all the units from p1
+								p1.push(unit)
+								for(var i = 0; i < unit.stats.speed; i++){			// we add units to the ALL array in accordance to their speed
+									all.push(unit)
+								}
+							});
+
+							p2units.forEach(function(unit){							// array from p2 will hold all the units from p2
+								p2.push(unit)
+								for(var i = 0; i < unit.stats.speed; i++){
+									all.push(unit)
+								}
+							});
+
+							console.log("HERE ARE THE UNITS SO FAR:");
+							console.log("p1:");
+							console.log(p1);
+							console.log("p2:")
+							console.log(p2);
+							console.log("ALL:");
+							console.log(all);
+
+							console.log("===========");
+							console.log("COMMENCING BATTLE");
+							
+							oneBattle(all, p1, p2, function declareWinner(winner){				// oneBattle() runs until on the groups is defeated, and returns the name of the winning player
+								console.log("ENDING BATTLE");
+								console.log("===========");
+
+								/* remove off all the dead units and reset dead group */
+
+								var loserName;
+								var loserGroup;
+
+									if(winner == player1){
+										console.log("The winner is player 1, " + winner);
+										loserName = player2;
+										loserGroup = group2;
+										winnerName = player1;
+										winnerGroup = group1;
+									} else if(winner == player2){
+										console.log("The winner is player 1, " + winner);
+										loserName = player1;
+										loserGroup = group1;
+										winnerName = player2;
+										winnerGroup = group2;
+									}
+
+
+									var loserQuery = {
+										name: loserName
+									}
+
+									var winnerQuery = {
+										name: winnerName
+									}
+
+								database.read(db, "player", loserQuery, function getLoserPlayer(updatedLosingPlayer){
+									database.read(db, "player", winnerQuery, function getWinnerPlayer(updatedWinnerPlayer){
+										p1units.forEach(function(unit){
+											var deceased = {
+												id: unit.id
+											}
+
+											deadUnits.push(deceased);
+										})
+
+										var losingPlayerUpdateQuery = {
+											$set: {}
+										}
+
+										console.log("updatedLosingPlayer[0].assets.groups[loserGroup].location:");
+										console.log(updatedLosingPlayer[0].assets.groups[loserGroup].location);
+
+										if(updatedLosingPlayer[0].assets.groups[loserGroup].location == "gates"){					// if the group that lost lost at the gates, we need to set the gates group to none.
+											losingPlayerUpdateQuery.$set["assets.city.buildings.walls.gates.unit_group"] = "none";
+										}
+
+										losingPlayerUpdateQuery.$set["assets.groups." + loserGroup + ".location"] = "none";
+										losingPlayerUpdateQuery.$set["assets.groups." + loserGroup + ".status"] = "free";
+										losingPlayerUpdateQuery.$set["assets.groups." + loserGroup + ".size"] = 0;
+
+
+										var losingUnitsRemovalQuery = {
+											$or: deadUnits
+										}
+
+										var winningGroupStatusUpdate = {
+											$set: {}
+										}
+
+										winningGroupStatusUpdate.$set["assets.groups." + winnerGroup + ".status"] = "free";
+
+
+										console.log("deadUnits");
+										console.log(deadUnits);
+										console.log("losingUnitsRemovalQuery.$or");
+										console.log(losingUnitsRemovalQuery.$or);
+
+
+										console.log("We have " + losingUnitsRemovalQuery.$or.length + " units belonging to " + losingUnitsRemovalQuery.$or[0].owner + " to remove");			// this is a weird way to get the loser's name, but it ensures that the queries are correct
+
+										var notificationUpdate = {
+											$set:{
+												expires: Date.now(),
+												winner: winnerName
+											}
+										}
+
+
+
+
+
+
+
+
+
+										database.update(db, "player", loserQuery, losingPlayerUpdateQuery, function updateLosingPlayer(updatedLoser){
+											database.update(db, "player", winnerQuery, winningGroupStatusUpdate, function updateWinningPlayer(updatedWinner){
+												
+													database.remove(db, "unit", losingUnitsRemovalQuery, function removeDeadUnits(units){
+														callback({status: "success", winner: winnerName, winner: loserName, city: updatedLosingPlayer[0].assets.city.name});
+													});
+												
+											});
+										});
+									})
+								})
+							});				
+							
+							
+
+							
+						} else {
+							console.log("p1units.length: " + p1units.length);
+							console.log("p2units.length: " + p2units.length);
+							console.log("Something went wrong - one of the groups is empty.")
+							callback({status: "fail", message: "One of the groups is empty"});
+						}
+					})
+				})
+			
+			})
+		} else {
+			callback({status: "fail", message: "Couldn't find that attack action"});
+		}
+	})
+
+}
+
 
 function oneBattle(all, p1, p2, callback){
 
@@ -1268,4 +1489,5 @@ module.exports.joinGame = joinGame;
 module.exports.nameCity = nameCity;
 module.exports.startGame = startGame;
 module.exports.battle = battle;
+module.exports.engage = engage;
 module.exports.apocalypse = apocalypse;

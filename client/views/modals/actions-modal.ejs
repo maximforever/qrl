@@ -1,8 +1,6 @@
 <% assigned0 = 0; assigned1 = 0; assigned2= 0; assigned3 = 0; %>
 
-<span class = "bold"><%= opponent.name %>:</span>
-<br>
-Game ID: <%= opponent.gameID %>
+<span class = "bold">Opponent:</span> <%= opponent.name %>
 
 <br>
 <br>
@@ -30,7 +28,12 @@ Game ID: <%= opponent.gameID %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
     <% if (player.groups.one.status == "free") { %>
         <br>
-        <button class = "attack-player" data-group="one" data-opponent=<%= opponent.name %>>Group 1: Attack</button>
+        <span>Order Group 1 to attack:</span>
+        <br>    
+        <button class = "attack-player" data-group="one" data-wall="north" data-opponent=<%= opponent.name %>>North wall</button>
+        <button class = "attack-player" data-group="one" data-wall="east" data-opponent=<%= opponent.name %>>East wall</button>
+        <button class = "attack-player" data-group="one" data-wall="south" data-opponent=<%= opponent.name %>>South wall</button>
+        <button class = "attack-player" data-group="one" data-wall="west" data-opponent=<%= opponent.name %>>West wall</button>
     <% } %>
 <% } %>
 
@@ -64,7 +67,12 @@ Game ID: <%= opponent.gameID %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
     <% if (player.groups.two.status == "free") { %>
         <br>
-        <button class = "attack-player" data-group="two" data-opponent=<%= opponent.name %>>Group 2: Attack</button>
+        <span>Order Group 2 to attack:</span>
+        <br>    
+        <button class = "attack-player" data-group="two" data-wall="north" data-opponent=<%= opponent.name %>>North wall</button>
+        <button class = "attack-player" data-group="two" data-wall="east" data-opponent=<%= opponent.name %>>East wall</button>
+        <button class = "attack-player" data-group="two" data-wall="south" data-opponent=<%= opponent.name %>>South wall</button>
+        <button class = "attack-player" data-group="two" data-wall="west" data-opponent=<%= opponent.name %>>West wall</button>
     <% } %>
 <% } %>
 
@@ -96,10 +104,14 @@ Game ID: <%= opponent.gameID %>
     Footmen: <%= footman %> | Archers: <%= archer %> | Scouts: <%= scout %>
     <% if (player.groups.three.status == "free") { %>
         <br>
-        <button class = "attack-player" data-group="three" data-opponent=<%= opponent.name %>>Group 3: Attack</button>
+        <span>Order Group 3 to attack:</span>
+        <br>    
+        <button class = "attack-player" data-group="three" data-wall="north" data-opponent=<%= opponent.name %>>North wall</button>
+        <button class = "attack-player" data-group="three" data-wall="east" data-opponent=<%= opponent.name %>>East wall</button>
+        <button class = "attack-player" data-group="three" data-wall="south" data-opponent=<%= opponent.name %>>South wall</button>
+        <button class = "attack-player" data-group="three" data-wall="west" data-opponent=<%= opponent.name %>>West wall</button>
     <% } %>
 <% } %>
-
 
 <br>
 

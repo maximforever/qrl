@@ -8,7 +8,7 @@ function main(){
 
     var gameLoop = setInterval(function(){
     	getUpdatedInfo();
-    }, 10000);		// let's fetch new data every, eh, 10 seconds
+    }, 3000);		// let's fetch new data every, eh, 3 seconds
 
 
     function getUpdatedInfo(){	                      /* All the info we need to update a player's screen */
@@ -25,6 +25,9 @@ function main(){
                 	units = newData.unitData;
                     opponents = newData.opponentData;
                     notifications = newData.notificationData;
+                    messages = newData.messageData;
+
+                    console.log(newData)
 
                     scouts = units.filter(function(el){         // this is how we get from all units to individual units
                         return el.type == "scout"
@@ -104,18 +107,28 @@ function main(){
                             var timeToExpire = Math.floor((action.expires - Date.now())/1000);             // seconds 
 
                                 if(timeToExpire >= 0 ){
-                                    $("#action-container").append("<p id = '" + action.action_id +"'> <span class = 'bold'>" + action.from + "</span> has sent soldiers to attack you. They will be here in <span data-id = '" + action.action_id + "'></span> seconds</p>")
-                                    $("#action-container").append("<br><p>Hint: move a unit group to the city gates to meet your opponent head on.</p>");
+                                    console.log("Recording attack " + action.action_id);
+                                    $("#action-container").append("<span id = '" + action.action_id +"'> <span class = 'bold'>" + action.from + "</span> has sent a force to attack you. They will be here in <span data-id = '" + action.action_id + "'></span> seconds</span>")
+                                    $("#action-container").append("<br><br>Hint: move a unit group to the city gates to meet your opponent head on.");
                                     $("#action-container").append("<br><button class = 'defenses'>Set up your defenses</button>");
                                     $("#action-container").append("<br><button>Scout</button>");
                                     $("#action-container").append("<br><button class = 'engage' data-id=" + action.action_id + " >Engage now</button>");
                                     $("span[data-id='" + action.action_id + "']").text(timeToExpire);
                                 } else {
-                                    $("#action-container").append("<p><span class = 'bold'>" + action.from + "</span> has attacked you.<span class = 'bold'>" + action.winner + "</span> won.</p>")
+                                    $("#action-container").append("<p><span class = 'bold'>" + action.from + "</span> has attacked you.")
                                 }
                             }
                         })
 
+                    }
+
+                    if(messages.length > 0){
+                        $("#message-container").empty();
+
+                        messages.forEach(function(message){
+                            $("#message-container").append(message + "<br>");
+
+                        })
                     }
                     
 
@@ -361,10 +374,12 @@ function main(){
 
         var thisEnemy = $(this).data("opponent");
         var thisGroup = $(this).data("group");
+        var thisWall = $(this).data("wall");
 
         var attackData = {
             name: thisEnemy,
-            group: thisGroup
+            group: thisGroup,
+            wall: thisWall
         }
 
         var enemyData = {

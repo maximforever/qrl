@@ -1,7 +1,7 @@
 const database = require("./database");
 const dbops = require("./dbops");
 
-const CYCLE = 1000*60*6;
+const CYCLE = 1000*60*0.5;
 
 function addResources(db, req, callback){
 
@@ -103,17 +103,14 @@ function checkForAttacks(db, req, callback){
         2. add a notification based on this attack
     */
 
-    var notificationTime = Date.now() + CYCLE/2;          
+    var notificationTime = Date.now() + CYCLE;          
 
     var date = new Date(notificationTime);
     console.log("Looking for actions that expire before " + date);
 
     var attackQuery = {
         type: "attack",
-        to: req.session.user.name,
-        expires: {
-            $lt: notificationTime
-        }
+        to: req.session.user.name
     }
 
     database.read(db, "action", attackQuery, function attacksAgainstPlayer(attacks){
@@ -164,20 +161,138 @@ function checkForAttacks(db, req, callback){
 
 function resolveAttacks(db,req, callback){
 
+    console.log("RESOLVING ATTACKS!")
+
     /*
         1. find all attacks against the player where the expires date >= Date.now()
         2. if the attack.to player has a unit at the gate...
             a. get that unit
             b. engage that unit with dbops.battle
         3. if the attack.to player doesn't have a unit at the gate...
-            a. 
+            a. engage attack at wall
     */
 
 
+
+    var actionQuery = {
+        expires: {
+            $lte: Date.now()
+        }
+    }
+
+
+    database.read(db, "action", actionQuery, function getExpiredAttacks(attacks){
+        console.log("attacks:");
+        console.log(attacks);
+        
+        if(attacks.length > 0){
+            console.log("Found " + attacks.length + " unresolved attacks for " + req.session.user.name);
+
+            attacks.forEach(function(attack){
+                if(attack.from == req.session.user.name || attack.to == req.session.user.name){
+                    var attackedPlayer = {
+                        name: attack.to
+                    }
+
+                    dbops.engage(db, req, attack, function attackResult(response){
+
+                        var notificationBody = response.winnerName + " won a battle against " + response.loserName + " at " + response.city
+
+                        var notificationUpdateQuery = {
+                            $push: {
+                                "assets.messages": {
+                                    body: notificationBody,
+                                    timestamp: Date.now()
+                                }
+                            }
+                        }
+
+                        var winnerQuery = {name: response.winnerName}
+                        var loserQuery = {name: response.loserName}
+
+                        database.update(db, "player", winnerQuery, notificationUpdateQuery, function updateWinner(winnerResponse){
+                            database.update(db, "player", loserQuery, notificationUpdateQuery, function updateLoser(loserResponse){
+                                console.log("XXXX Done with action: " + attack.id);
+                            })  
+                        })
+
+                    })
+                }
+
+            })
+
+            callback();
+
+        } else {
+            console.log("There are no unresolved attacks");
+            callback();
+        }
+
+    })
 }
 
-function clearNotifications(){
+function clearNotifications(db, req, callback){
     /* we'll need to turn any battle notifications into resolved won/lost notifications*/
+
+    /*
+        1. find all actions where expired <= Date.now()
+        2. get the action.TO player data
+        3. get the player's notifications
+        4. filter them for everything that's NOT that ID
+        5. update player
+        6. delete action
+    */
+
+    var actionQuery = {
+        expires: {
+            $lte: Date.now()
+        },
+        to: req.session.user.name
+    }
+
+    var playerQuery = {name: req.session.user.name}
+
+    database.read(db, "action", actionQuery, function getAllExpiredActions(actions){
+        if(actions.length > 0){
+            console.log("Found " + actions.length + " expired actions for " + req.session.user.name);
+            database.read(db, "player", playerQuery, function getUpdatedPlayer(player){
+
+                actions.forEach(function(expiredAction){
+
+                    var removeActionQuery = {
+                        id: expiredAction.id
+                    }
+
+                    var updatedNotifications = player[0].assets.notifications.filter(function(notification){
+                        console.log("notification");
+                        console.log(notification);
+                        console.log("expiredAction");
+                        console.log(expiredAction);
+                        return notification.action_id != expiredAction.id;
+                    })
+
+                    var notificationUpdateQuery = {
+                        $set: {
+                            "assets.notifications": updatedNotifications
+                        }
+                    }
+
+                    database.update(db, "player", playerQuery, notificationUpdateQuery, function updateNotification(updatedNotifications){
+                        database.remove(db, "action", removeActionQuery, function confirm(response){
+                            console.log("Removed action " + expiredAction.id + "!");
+                        });
+                    })
+                })
+
+            })
+        } else {
+            console.log("There are no expired actions");
+            
+        }
+
+        callback();
+       
+    })
 }
 
 /* We'll need to expire old actions */
@@ -186,3 +301,5 @@ function clearNotifications(){
 
 module.exports.addResources = addResources;
 module.exports.checkForAttacks = checkForAttacks;
+module.exports.clearNotifications = clearNotifications;
+module.exports.resolveAttacks = resolveAttacks;

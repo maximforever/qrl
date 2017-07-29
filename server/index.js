@@ -176,9 +176,13 @@ MongoClient.connect(dbAddress, function(err, db){
                 
                 onload.checkForAttacks(db, req, function confirm(){
                     onload.addResources(db, req, function resourcesAdded(){
-                        dbops.getGameData(db, req, function sendGameData(gameData){
-                            res.send(gameData);
-                        })          
+                        onload.resolveAttacks(db,req, function resolveAttacks(){
+                            onload.clearNotifications(db,req, function notificationsCleared(){
+                                dbops.getGameData(db, req, function sendGameData(gameData){
+                                    res.send(gameData);
+                                }) 
+                            })
+                        })         
                     });          
                 });  
 
