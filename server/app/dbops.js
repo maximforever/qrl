@@ -32,8 +32,14 @@ var str = {
 	"archer": 5
 }
 
+var hp = {
+	"footman": 20,
+	"archer": 20
+}
 
-function soldier(str, armor, speed){
+
+function soldier(hp, str, armor, speed){
+	this.hp = hp;
 	this.str = str; 
 	this.armor = armor;
 	this.speed = speed;
@@ -348,7 +354,6 @@ function buyUnit(db, req, callback){
 								lastUpdated: Date.now(),
 								owner: thisPlayer[0].name,
 								job: "none",
-								hp: 100,
 								group: "none"
 							}
 
@@ -359,7 +364,7 @@ function buyUnit(db, req, callback){
 
 
 							if(req.body.unit == "archer" || req.body.unit == "footman"){
-								fightingStats = new soldier(str[req.body.unit], armor[req.body.unit], speed[req.body.unit]); 				
+								fightingStats = new soldier(hp[req.body.unit], str[req.body.unit], armor[req.body.unit], speed[req.body.unit]); 				
 								newUnit.stats = fightingStats;																				 
 							}
 							console.log("--------");
@@ -523,7 +528,7 @@ function groupUnit(db, req, callback){
 			database.read(db, "unit", unitQuery, function getUnit(unit){
 				unit = unit[0];
 				if(unit.type == "footman" || unit.type == "archer"){
-					if(unit.hp > 0){
+					if(unit.stats.hp > 0){
 
 						var unitUpdate = {
 							$set: {
@@ -1364,6 +1369,8 @@ function oneBattle(all, p1, p2, callback){
 		var defender;
 		var damage;
 
+		var p1loc = null; // this should be the location of the unit - there should be an armor bonus for walls
+		var p2loc
 		
 
 		if (attacker.owner == playerOneName){
@@ -1378,19 +1385,23 @@ function oneBattle(all, p1, p2, callback){
 		damage = attacker.stats.str - defender.stats.armor;
 
 		if(attacker.type == "archer"){				// if attacked by archer, ignore armor
-		console.log("ignoring armor!");
+			console.log("ignoring armor!");
 			damage += defender.stats.armor;
 		}
 
-		console.log("defender " + defender.id + " HP pre-damage: " + defender.hp);
+		if(damage < 0){					// this is a weird corollary, but if the defender has more armor than the attacker, the defender shouldn't gain life
+			damage = 0
+		}
 
-		defender.hp -= damage;						// DEAL THE DAMAGE
+		console.log("defender " + defender.id + " HP pre-damage: " + defender.stats.hp);
 
-		console.log("defender " + defender.id + " HP post-damage: " + defender.hp);
+		defender.stats.hp -= damage;						// DEAL THE DAMAGE
+
+		console.log("defender " + defender.id + " HP post-damage: " + defender.stats.hp);
 
 		/* if dead, remove from arrays... */
 
-		if(defender.hp <= 0){
+		if(defender.stats.hp <= 0){
 			console.log("XXXXXX unit " + defender.id + " is dead");
 
 
