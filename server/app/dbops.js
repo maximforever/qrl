@@ -1314,13 +1314,6 @@ console.log("ENGAGING!");
 										}
 
 
-
-
-
-
-
-
-
 										database.update(db, "player", loserQuery, losingPlayerUpdateQuery, function updateLosingPlayer(updatedLoser){
 											database.update(db, "player", winnerQuery, winningGroupStatusUpdate, function updateWinningPlayer(updatedWinner){
 												
