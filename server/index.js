@@ -60,7 +60,7 @@ MongoClient.connect(dbAddress, function(err, db){
         var timeNow = new Date();
         console.log("-----> " + req.method.toUpperCase() + " " + req.url + " on " + timeNow);  
         console.log("Session: ");
-        console.log(app.session);
+        console.log(req.session);
         console.log("---");
         next();
     });
