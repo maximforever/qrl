@@ -43,7 +43,7 @@ MongoClient.connect(dbAddress, function(err, db){
 
 
     app.use(session({                                   // I THINK we only need to do this once, because it's causing us to send 2 GET requests to '/'
-        secret: Date.now(),
+        secret: Date.now().toString(),
         saveUninitialized: false,
         resave: false,
         secure: false,
