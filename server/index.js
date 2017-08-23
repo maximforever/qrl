@@ -7,7 +7,8 @@ const express = require("express");                     // express
 const MongoClient = require('mongodb').MongoClient;     // talk to mongo
 const bodyParser = require('body-parser');              // parse request body
 var session = require('express-session')                // create sessions
-//var db;                                                 // placeholder for our database
+
+var secretString = Date.now().toString();
 
 const app = express();
 app.set("port", process.env.PORT || 3000)               // we're gonna start a server on whatever the environment port is or on 3000
@@ -41,9 +42,8 @@ MongoClient.connect(dbAddress, function(err, db){
 
     app.use(bodyParser.json());                         // for parsing application/json
 
-
     app.use(session({                                   // I THINK we only need to do this once, because it's causing us to send 2 GET requests to '/'
-        secret: Date.now().toString(),
+        secret: secretString,
         saveUninitialized: false,
         resave: false,
         secure: false,
@@ -53,6 +53,9 @@ MongoClient.connect(dbAddress, function(err, db){
     app.use(function(req, res, next){                                           // logs request URL
         var timeNow = new Date();
         console.log("-----> " + req.method.toUpperCase() + " " + req.url + " on " + timeNow);  
+        console.log("Session: ");
+        console.log(app.session);
+        console.log("---");
         next();
     });
 
