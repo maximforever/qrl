@@ -8,8 +8,6 @@ const MongoClient = require('mongodb').MongoClient;     // talk to mongo
 const bodyParser = require('body-parser');              // parse request body
 var session = require('express-session')                // create sessions
 
-var secretString = Date.now().toString();
-
 const app = express();
 app.set("port", process.env.PORT || 3000)               // we're gonna start a server on whatever the environment port is or on 3000
 app.set("views", path.join(__dirname, "../client/views"));        // tells us where our views are
@@ -17,6 +15,12 @@ app.set("view engine", "ejs");                          // tells us what view en
 
 app.use(express.static('client'));         // sets the correct views for the CSS file/generally accessing files
 
+/*var secretString = '';
+var string = 'abcdefghijklmnopqrstuvwxyz1234567890'
+
+for(var i = 0; i <= 15; i++){
+    secretString += string[Math.floor(Math.random()*string.length)];
+}*/
 
 
 const dbops = require("./app/dbops");
@@ -43,7 +47,7 @@ MongoClient.connect(dbAddress, function(err, db){
     app.use(bodyParser.json());                         // for parsing application/json
 
     app.use(session({                                   // I THINK we only need to do this once, because it's causing us to send 2 GET requests to '/'
-        secret: secretString,
+        secret: "awful-secret-string",
         saveUninitialized: false,
         resave: false,
         secure: false,
