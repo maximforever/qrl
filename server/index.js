@@ -15,12 +15,14 @@ app.set("view engine", "ejs");                          // tells us what view en
 
 app.use(express.static('client'));         // sets the correct views for the CSS file/generally accessing files
 
-/*var secretString = '';
+var secretString = '';
 var string = 'abcdefghijklmnopqrstuvwxyz1234567890'
 
 for(var i = 0; i <= 15; i++){
     secretString += string[Math.floor(Math.random()*string.length)];
-}*/
+}
+
+console.log(secretString);
 
 
 const dbops = require("./app/dbops");
@@ -47,7 +49,7 @@ MongoClient.connect(dbAddress, function(err, db){
     app.use(bodyParser.json());                         // for parsing application/json
 
     app.use(session({                                   // I THINK we only need to do this once, because it's causing us to send 2 GET requests to '/'
-        secret: "awful-secret-string",
+        secret: secretString,
         saveUninitialized: false,
         resave: false,
         secure: false,
